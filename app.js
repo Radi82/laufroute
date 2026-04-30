@@ -360,3 +360,85 @@ function decodePolyline(str, precision = 5) {
 
     return coords;
 }
+/************************************************************
+ * 🧰 BASIC ACTIONS (FEHLTEN VORHER)
+ ************************************************************/
+
+function undoPoint() {
+    if (!points.length) return;
+
+    points.pop();
+
+    const m = markers.pop();
+    if (m) map.removeLayer(m);
+
+    if (points.length > 1) drawRoute();
+    else if (routeLine) map.removeLayer(routeLine);
+}
+
+function clearRoute() {
+    points = [];
+
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    if (routeLine) map.removeLayer(routeLine);
+
+    document.getElementById("distance").innerText = "Distanz: 0 km";
+}
+
+function exportRoute() {
+    const blob = new Blob([JSON.stringify(points)], {
+        type: "application/json"
+    });
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "route.json";
+    a.click();
+}
+
+function goToMyLocation() {
+    if (!navigator.geolocation) return alert("Kein GPS");
+
+    navigator.geolocation.getCurrentPosition((pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        map.setView([lat, lng], 15);
+
+        L.circleMarker([lat, lng], {
+            radius: 8,
+            color: "#00ff66"
+        }).addTo(map);
+    });
+}
+
+async function searchLocation() {
+    const q = document.getElementById("searchInput").value;
+    if (!q) return;
+
+    const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`
+    );
+
+    const data = await res.json();
+    if (!data.length) return alert("Nichts gefunden");
+
+    const p = data[0];
+
+    map.setView([p.lat, p.lon], 14);
+
+    L.marker([p.lat, p.lon])
+        .addTo(map)
+        .bindPopup(p.display_name)
+        .openPopup();
+}
+
+async function login() {
+    await supabaseClient.auth.signInWithOAuth({ provider: "google" });
+}
+
+async function logout() {
+    await supabaseClient.auth.signOut();
+}
