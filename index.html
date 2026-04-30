@@ -12,46 +12,51 @@
 <body>
 
 <h1>Laufrouten Maker v2.0</h1>
-<h2> "Kleines DIY Projekt. Wird noch weiter ausgebaut. Cheers, M.H ;)"</h2>
+<h2>Kleines DIY Projekt. Wird noch weiter ausgebaut. Cheers, M.H ;)</h2>
 
 <div class="toolbar">
 
-    <!-- 🧭 MAP ACTIONS -->
     <button id="undoBtn">Undo</button>
     <button id="resetBtn">Reset</button>
     <button id="exportBtn">Export</button>
     <button id="locBtn">📍 Standort</button>
 
-    <!-- 🔎 SEARCH -->
     <input id="searchInput" placeholder="Ort suchen..." />
     <button id="searchBtn">🔎</button>
 
-    <!-- 🏃 RUN -->
+    <button id="saveRouteBtn">Route speichern</button>
+    <button id="routesPanelBtn">📍 Routen</button>
+
     <button id="runBtn">▶ START RUN</button>
     <span id="runStatus">READY</span>
-    <button id="saveRouteBtn">Route speichern</button>
-    <button id="loadRoutesBtn">Routen laden</button>
 
-    <!-- 🔐 AUTH -->
     <button id="loginBtn">🔐 Login</button>
     <button id="logoutBtn">🚪 Logout</button>
     <span id="userInfo">Not logged in</span>
 
-    <!-- 📂 IMPORT / EXPORT -->
     <button id="importBtn">Import</button>
     <input id="fileInput" type="file" accept=".json" hidden>
 
-    <!-- 📊 INFO -->
     <span id="distance">Distanz: 0 km</span>
 
-    <!-- 📜 HISTORY -->
     <h3>RUN HISTORY</h3>
     <div id="historyList"></div>
 
-    <!-- 📍 ROUTES -->
-    <h3>ROUTEN</h3>
-    <div id="routeList"></div>
+</div>
 
+<div id="routesPanel" class="routes-panel hidden">
+    <h3>📍 Gespeicherte Routen</h3>
+
+    <select id="routeSelect">
+        <option value="">Route auswählen...</option>
+    </select>
+
+    <div class="routes-panel-actions">
+        <button id="loadSelectedRouteBtn">Laden</button>
+        <button id="exportSelectedRouteBtn">GPX</button>
+        <button id="renameSelectedRouteBtn">Umbenennen</button>
+        <button id="deleteSelectedRouteBtn">Löschen</button>
+    </div>
 </div>
 
 <div id="map"></div>
@@ -61,10 +66,10 @@
     MODE: ROUTE PLANNER<br>
     GPS: ENABLED
 </div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script src="supabase.js"></script>
-
 <script type="module" src="js/app.js"></script>
 
 </body>

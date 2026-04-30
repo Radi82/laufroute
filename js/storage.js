@@ -1,34 +1,46 @@
 /************************************************************
  * 💾 STORAGE MODULE
+ *
  * Zuständig für:
  * - Run speichern
  * - Run History laden
  * - Run löschen
- * - Route Speichern
- * - Route laden
- * - History Events senden
+ * - Routen speichern
+ * - Routen laden
+ * - Routen löschen
+ * - Routen umbenennen
+ * - Events an UI senden
  ************************************************************/
 
 import { on, emit } from "./eventBus.js";
 
+/************************************************************
+ * 📦 STATE
+ ************************************************************/
 let runHistory = [];
 
+/************************************************************
+ * 🚀 INIT STORAGE
+ * Registriert alle Storage-relevanten Events
+ ************************************************************/
 export function initStorage() {
     console.log("💾 STORAGE MODULE READY");
 
+    // Runs
     on("run:finished", saveRunToDB);
     on("storage:load", loadRunHistory);
     on("history:delete", deleteRun);
-    on("route:saveToDB", saveRouteToDB);
+
+    // Routes
     on("routes:load", loadRoutesFromDB);
     on("route:delete", deleteRouteFromDB);
     on("route:rename", ({ id, name }) => renameRouteInDB(id, name));
 }
 
-
 /************************************************************
- * Laden der Run History 
- * ************************************************************/
+ * 🏃 LOAD RUN HISTORY
+ * Lädt alle Runs des eingeloggten Users aus Supabase
+ ************************************************************/
 export async function loadRunHistory() {
     const user = await getUser();
 
@@ -50,15 +62,17 @@ export async function loadRunHistory() {
     }
 
     runHistory = data || [];
+
+    // UI informieren
     emit("history:loaded", runHistory);
 
     return runHistory;
 }
 
-
 /************************************************************
- * Speichere RUN in die DB 
- * ************************************************************/
+ * 💾 SAVE RUN
+ * Speichert einen abgeschlossenen Run in Supabase
+ ************************************************************/
 async function saveRunToDB(runData) {
     const user = await getUser();
 
@@ -85,13 +99,15 @@ async function saveRunToDB(runData) {
     }
 
     emit("run:saved");
+
+    // Nach dem Speichern History neu laden
     await loadRunHistory();
 }
 
-
 /************************************************************
- * Lösche RUN 
- * ************************************************************/
+ * 🗑️ DELETE RUN
+ * Löscht einen Run des eingeloggten Users
+ ************************************************************/
 async function deleteRun(runId) {
     const user = await getUser();
 
@@ -112,11 +128,17 @@ async function deleteRun(runId) {
     await loadRunHistory();
 }
 
-
 /************************************************************
- * 📍 ROUTE STORAGE
+ * 📍 SAVE ROUTE
+ * Speichert eine geplante Route in Supabase
+ *
+ * routeData erwartet:
+ * {
+ *   name: string,
+ *   points: [[lat, lng], ...],
+ *   distance: number
+ * }
  ************************************************************/
-
 export async function saveRouteToDB(routeData) {
     const user = await getUser();
 
@@ -125,16 +147,12 @@ export async function saveRouteToDB(routeData) {
         return;
     }
 
-    const name = prompt("Name der Route:", "Neue Route");
-
-    if (!name) return;
-
     const { error } = await window.supabaseClient
         .from("routes")
         .insert([
             {
                 user_id: user.id,
-                name,
+                name: routeData.name || "Meine Route",
                 points: routeData.points,
                 distance: routeData.distance || 0
             }
@@ -149,6 +167,10 @@ export async function saveRouteToDB(routeData) {
     await loadRoutesFromDB();
 }
 
+/************************************************************
+ * 📥 LOAD ROUTES
+ * Lädt alle gespeicherten Routen des Users
+ ************************************************************/
 export async function loadRoutesFromDB() {
     const user = await getUser();
 
@@ -169,9 +191,14 @@ export async function loadRoutesFromDB() {
     }
 
     emit("routes:loaded", data || []);
+
     return data || [];
 }
 
+/************************************************************
+ * 🗑️ DELETE ROUTE
+ * Löscht eine gespeicherte Route
+ ************************************************************/
 export async function deleteRouteFromDB(routeId) {
     const user = await getUser();
 
@@ -192,6 +219,10 @@ export async function deleteRouteFromDB(routeId) {
     await loadRoutesFromDB();
 }
 
+/************************************************************
+ * ✏️ RENAME ROUTE
+ * Ändert den Namen einer gespeicherten Route
+ ************************************************************/
 export async function renameRouteInDB(routeId, newName) {
     const user = await getUser();
 
@@ -199,7 +230,9 @@ export async function renameRouteInDB(routeId, newName) {
 
     const { error } = await window.supabaseClient
         .from("routes")
-        .update({ name: newName })
+        .update({
+            name: newName
+        })
         .eq("id", routeId)
         .eq("user_id", user.id);
 
@@ -212,10 +245,10 @@ export async function renameRouteInDB(routeId, newName) {
     await loadRoutesFromDB();
 }
 
-
 /************************************************************
- * Get user
- * ************************************************************/
+ * 👤 GET CURRENT USER
+ * Holt den aktuell eingeloggten Supabase User
+ ************************************************************/
 async function getUser() {
     const { data, error } = await window.supabaseClient.auth.getUser();
 

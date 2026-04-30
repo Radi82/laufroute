@@ -4,11 +4,20 @@
  * - Button Events
  * - History Rendering
  * - Run Status Anzeige
+ * - Routen Dropdown Panel
  ************************************************************/
 
 import { on, emit } from "./eventBus.js";
 import { formatDuration } from "./utils.js";
 
+/************************************************************
+ * 📦 UI STATE
+ ************************************************************/
+let cachedRoutes = [];
+
+/************************************************************
+ * 🚀 INIT UI
+ ************************************************************/
 export function initUI() {
     console.log("🎛️ UI MODULE READY");
 
@@ -27,17 +36,25 @@ function bindButtons() {
     bind("undoBtn", () => emit("route:undo"));
     bind("resetBtn", () => emit("route:reset"));
     bind("exportBtn", () => emit("route:export"));
-    bind("saveRouteBtn", () => emit("route:save"));
-    bind("loadRoutesBtn", () => emit("routes:load"));
+
     bind("locBtn", () => emit("map:locate"));
     bind("searchBtn", () => emit("map:search"));
-    
+
     bind("loginBtn", () => emit("auth:login"));
     bind("logoutBtn", () => emit("auth:logout"));
 
     bind("importBtn", () => {
         document.getElementById("fileInput")?.click();
     });
+
+    /********************
+     * 📍 ROUTEN PANEL
+     ********************/
+    bind("routesPanelBtn", toggleRoutesPanel);
+    bind("loadSelectedRouteBtn", loadSelectedRoute);
+    bind("exportSelectedRouteBtn", exportSelectedRoute);
+    bind("renameSelectedRouteBtn", renameSelectedRoute);
+    bind("deleteSelectedRouteBtn", deleteSelectedRoute);
 }
 
 function bind(id, handler) {
@@ -89,9 +106,12 @@ function bindEventListeners() {
     on("run:state", updateRunState);
     on("run:saved", showRunSaved);
     on("history:loaded", renderHistory);
-    on("routes:loaded", renderRoutes);
+    on("routes:loaded", renderRoutesDropdown);
 }
 
+/************************************************************
+ * 🏃 RUN STATUS
+ ************************************************************/
 function updateRunState(payload) {
     const btn = document.getElementById("runBtn");
     const status = document.getElementById("runStatus");
@@ -121,64 +141,106 @@ function showRunSaved() {
 }
 
 /************************************************************
- * 📍 ROUTE LIST UI
+ * 📍 ROUTEN PANEL
  ************************************************************/
-function renderRoutes(routes) {
-    const container = document.getElementById("routeList");
+function toggleRoutesPanel() {
+    const panel = document.getElementById("routesPanel");
+    if (!panel) return;
 
-    if (!container) return;
+    panel.classList.toggle("hidden");
 
-    container.innerHTML = "";
+    // Beim Öffnen frisch laden
+    if (!panel.classList.contains("hidden")) {
+        emit("routes:load");
+    }
+}
 
-    if (!routes.length) {
-        container.innerHTML = "<p>Keine Routen gespeichert.</p>";
+function renderRoutesDropdown(routes) {
+    cachedRoutes = routes || [];
+
+    const select = document.getElementById("routeSelect");
+    if (!select) return;
+
+    select.innerHTML = `<option value="">Route auswählen...</option>`;
+
+    if (!cachedRoutes.length) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.innerText = "Keine Routen gespeichert";
+        select.appendChild(option);
         return;
     }
 
-    routes.forEach(route => {
-        const div = document.createElement("div");
-        div.className = "route-item";
-
-        div.innerHTML = `
-            <div>
-                📍 <strong>${route.name || "Unbenannte Route"}</strong><br>
-                📅 ${new Date(route.created_at).toLocaleString()}<br>
-                🧭 ${route.points?.length || 0} Punkte
-            </div>
-            <button class="rename-route-btn">Umbenennen</button>
-            <button class="delete-route-btn">Löschen</button>
-        `;
-
-        div.addEventListener("click", () => {
-            emit("route:loadSaved", route);
-        });
-
-        div.querySelector(".delete-route-btn").addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (confirm("Route wirklich löschen?")) {
-            emit("route:delete", route.id);
-}
-        });
-
-        div.querySelector(".rename-route-btn").addEventListener("click", (e) => {
-            e.stopPropagation();
-
-            const name = prompt("Neuer Routenname:", route.name || "");
-
-            if (name) {
-                emit("route:rename", {
-                    id: route.id,
-                    name
-                });
-            }
-        });
-
-        container.appendChild(div);
+    cachedRoutes.forEach(route => {
+        const option = document.createElement("option");
+        option.value = route.id;
+        option.innerText = route.name || "Unbenannte Route";
+        select.appendChild(option);
     });
 }
 
+function getSelectedRoute() {
+    const select = document.getElementById("routeSelect");
+    if (!select || !select.value) return null;
+
+    return cachedRoutes.find(route => route.id === select.value) || null;
+}
+
+function loadSelectedRoute() {
+    const route = getSelectedRoute();
+
+    if (!route) {
+        alert("Bitte zuerst eine Route auswählen");
+        return;
+    }
+
+    emit("route:loadSaved", route);
+}
+
+function exportSelectedRoute() {
+    const route = getSelectedRoute();
+
+    if (!route) {
+        alert("Bitte zuerst eine Route auswählen");
+        return;
+    }
+
+    emit("route:exportSaved", route);
+}
+
+function renameSelectedRoute() {
+    const route = getSelectedRoute();
+
+    if (!route) {
+        alert("Bitte zuerst eine Route auswählen");
+        return;
+    }
+
+    const name = prompt("Neuer Routenname:", route.name || "");
+
+    if (!name) return;
+
+    emit("route:rename", {
+        id: route.id,
+        name
+    });
+}
+
+function deleteSelectedRoute() {
+    const route = getSelectedRoute();
+
+    if (!route) {
+        alert("Bitte zuerst eine Route auswählen");
+        return;
+    }
+
+    if (confirm(`Route "${route.name || "Unbenannte Route"}" wirklich löschen?`)) {
+        emit("route:delete", route.id);
+    }
+}
+
 /************************************************************
- * 📜 HISTORY UI
+ * 📜 RUN HISTORY UI
  ************************************************************/
 function renderHistory(runs) {
     const container = document.getElementById("historyList");
@@ -213,7 +275,10 @@ function renderHistory(runs) {
 
         deleteBtn.addEventListener("click", (e) => {
             e.stopPropagation();
-            emit("history:delete", run.id);
+
+            if (confirm("Run wirklich löschen?")) {
+                emit("history:delete", run.id);
+            }
         });
 
         container.appendChild(div);
