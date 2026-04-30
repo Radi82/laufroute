@@ -1,57 +1,109 @@
+/************************************************************
+ * 💾 STORAGE MODULE (SUPABASE)
+ * Verantwortlich für:
+ * - Run speichern
+ * - Runs laden
+ * - zentrale Datenlogik für History
+ ************************************************************/
+
+import { supabaseClient } from "../supabase.js";
+
 let runHistory = [];
 
-export async function saveRunToDB(run) {
 
-    const user = await supabaseClient.auth.getUser();
-    if (!user.data.user) return;
-
-    await supabaseClient
-        .from("runs")
-        .insert([{
-            user_id: user.data.user.id,
-            distance: run.distance,
-            duration: run.duration,
-            points: run.points
-        }]);
+/************************************************************
+ * 🚀 INIT
+ ************************************************************/
+export function initStorage() {
+    console.log("💾 STORAGE MODULE READY");
 }
 
+
+/************************************************************
+ * 👤 USER HELPER
+ ************************************************************/
+async function getUser() {
+    const { data } = await supabaseClient.auth.getUser();
+    return data.user || null;
+}
+
+
+/************************************************************
+ * 💾 SAVE RUN
+ ************************************************************/
+export async function saveRunToDB(runData) {
+
+    const user = await getUser();
+    if (!user) {
+        console.warn("No user logged in → skip save");
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from("runs")
+        .insert([
+            {
+                user_id: user.id,
+                distance: runData.distance,
+                duration: runData.duration,
+                points: runData.points,
+                created_at: new Date().toISOString()
+            }
+        ]);
+
+    if (error) {
+        console.error("SAVE ERROR:", error);
+    }
+}
+
+
+/************************************************************
+ * 📥 LOAD RUN HISTORY
+ ************************************************************/
 export async function loadRunHistory() {
 
-    const user = await supabaseClient.auth.getUser();
-    if (!user.data.user) return;
+    const user = await getUser();
+    if (!user) return [];
 
-    const { data } = await supabaseClient
+    const { data, error } = await supabaseClient
         .from("runs")
         .select("*")
         .order("created_at", { ascending: false });
 
+    if (error) {
+        console.error("LOAD ERROR:", error);
+        return [];
+    }
+
     runHistory = data || [];
 
-    render();
+    return runHistory;
 }
 
-function render() {
 
-    const el = document.getElementById("historyList");
-    el.innerHTML = "";
+/************************************************************
+ * 📤 GET LOCAL CACHE
+ ************************************************************/
+export function getRunHistory() {
+    return runHistory;
+}
 
-    runHistory.forEach(r => {
 
-        const div = document.createElement("div");
+/************************************************************
+ * 🧹 DELETE RUN
+ ************************************************************/
+export async function deleteRun(id) {
 
-        div.innerHTML = `
-            📅 ${new Date(r.created_at).toLocaleString()}<br>
-            🏃 ${r.distance.toFixed(2)} km<br>
-            ⏱ ${Math.floor(r.duration / 60)} min
-        `;
+    const user = await getUser();
+    if (!user) return;
 
-        div.onclick = () => {
-            import("./run.js").then(m => {
-                const { map } = window;
-                L.polyline(r.points, { color: "red" }).addTo(map);
-            });
-        };
+    const { error } = await supabaseClient
+        .from("runs")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
 
-        el.appendChild(div);
-    });
+    if (error) {
+        console.error("DELETE ERROR:", error);
+    }
 }
