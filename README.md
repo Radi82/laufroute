@@ -3,7 +3,7 @@
 ### Alles noch Work in Progress :p ###
 
 
-# 🏃 Laufroute Planer (https://laufroute.vercel.app/)
+# 🏃 Laufroute Planer (https://laufroutev12.vercel.app/)
 
 Eine einfache Web-App zum Erstellen von Laufstrecken auf Basis von echten Wegen (keine Luftlinien).
 
