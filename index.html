@@ -136,14 +136,15 @@ async function drawRoute() {
 
     routeLine = L.polyline(coords, { color: 'blue' }).addTo(map);
 
-    document.getElementById("distance").innerText = "Distanz: " + distance.toFixed(2) + " km";
-    
+    document.getElementById("distance").innerText =
+      "Distanz: " + distance.toFixed(2) + " km";
+
     if (routeLine) {
-    map.fitBounds(routeLine.getBounds(), {
-    padding: [20, 20]
-  });
-}
-}
+      map.fitBounds(routeLine.getBounds(), {
+        padding: [20, 20]
+      });
+    }
+
   } catch (err) {
     console.error(err);
     alert("Routing Fehler: " + err.message);
@@ -163,7 +164,7 @@ function undoPoint() {
     drawRoute();
   } else {
     if (routeLine) map.removeLayer(routeLine);
-    document.getElementById("distance").innerText = "0";
+    document.getElementById("distance").innerText = "Distanz: 0 km";
   }
 }
 
@@ -176,7 +177,7 @@ function clearRoute() {
 
   if (routeLine) map.removeLayer(routeLine);
 
-  document.getElementById("distance").innerText = "0";
+  document.getElementById("distance").innerText = "Distanz: 0 km";
 }
 
 // JSON Export
@@ -196,32 +197,27 @@ function importRoute(event) {
   const reader = new FileReader();
 
   reader.onload = function(e) {
-    clearRoute();
     try {
-  const data = JSON.parse(e.target.result);
+      const data = JSON.parse(e.target.result);
 
-  if (!Array.isArray(data)) throw new Error("Ungültiges Format");
+      if (!Array.isArray(data)) {
+        throw new Error("Ungültiges Format");
+      }
 
-  clearRoute();
-  points = data;
+      clearRoute();
 
-  points.forEach(p => {
-    const marker = L.marker(p).addTo(map);
-    markers.push(marker);
-  });
+      points = data;
 
-  drawRoute();
+      points.forEach(p => {
+        const marker = L.marker(p).addTo(map);
+        markers.push(marker);
+      });
 
-} catch (err) {
-  alert("Fehler beim Import: " + err.message);
-}
+      drawRoute();
 
-    points.forEach(p => {
-      const marker = L.marker(p).addTo(map);
-      markers.push(marker);
-    });
-
-    drawRoute();
+    } catch (err) {
+      alert("Fehler beim Import: " + err.message);
+    }
   };
 
   reader.readAsText(file);
