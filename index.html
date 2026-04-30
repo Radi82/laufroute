@@ -2,217 +2,35 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Einfacher Laufrouten Maker V1.0</title>
+    <title>Laufroute</title>
 
-    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="style.css">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
-
-        #map {
-            width: 100%;
-            height: 90vh;
-            margin-top: 20px;
-        }
-
-        .toolbar {
-            background: rgba(0, 255, 0, 0.05);
-            border: 1px solid #0f0;
-            padding: 15px;
-            margin: 20px;
-            box-shadow: 0 0 10px #0f0;
-        }
-        button {
-    background: #0f0; /* Hacker-Grün */
-    color: #000;      /* Schwarzer Text */
-    border: 2px solid #0f0;
-    padding: 10px 18px;
-    font-size: 16px;
-    font-family: "Courier New", monospace;
-    cursor: pointer;
-    margin-right: 10px;
-
-    /* Hacker-Glow */
-    box-shadow: 0 0 10px #0f0, 0 0 20px #0f0 inset;
-
-    /* Smooth transitions */
-    transition: 0.2s ease-in-out;
-}
-
-button:hover {
-    background: #000;
-    color: #0f0;
-    box-shadow: 0 0 15px #0f0, 0 0 30px #0f0 inset;
-    transform: scale(1.05);
-}
-
-button:active {
-    transform: scale(0.95);
-    box-shadow: 0 0 5px #0f0, 0 0 10px #0f0 inset;
-}
-    </style>
 </head>
 
 <body>
 
-<h1>Laufroute</h1>
+<h1>LAUFROUTE v1.0</h1>
 
 <div class="toolbar">
-    <button onclick="saveRoute()">Speichern</button>
-    <button onclick="loadRoute()">Laden</button>
-    <button onclick="clearRoute()">Reset</button>
     <button onclick="undoPoint()">Undo</button>
-    <button onclick="exportRoute()">Export JSON</button>
+    <button onclick="clearRoute()">Reset</button>
+    <button onclick="exportRoute()">Export</button>
+
+    <button onclick="document.getElementById('fileInput').click()">
+        Import
+    </button>
+
     <input id="fileInput" type="file" accept=".json" onchange="importRoute(event)" hidden>
+
     <span id="distance">Distanz: 0 km</span>
 </div>
 
 <div id="map"></div>
 
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script>
-const map = L.map('map').setView([48.137, 11.575], 13);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19
-}).addTo(map);
-
-let points = [];
-let markers = [];
-let routeLine = null;
-
-
-// Klick → Punkt setzen
-map.on('click', function(e) {
-  const point = [e.latlng.lat, e.latlng.lng];
-  points.push(point);
-
-  const marker = L.marker(point).addTo(map);
-  markers.push(marker);
-
-  if (points.length > 1) drawRoute();
-});
-
-// Route berechnen
-async function drawRoute() {
-  try {
-const response = await fetch("/api/route", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    coordinates: points.map(p => [p[1], p[0]])
-  })
-});
-
-    if (!response.ok) {
-      throw new Error("API Fehler: " + response.status);
-    }
-
-    const data = await response.json();
-
-    const coords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
-    const distance = data.features[0].properties.summary.distance / 1000;
-
-    if (routeLine) map.removeLayer(routeLine);
-
-    routeLine = L.polyline(coords, { color: 'blue' }).addTo(map);
-
-    document.getElementById("distance").innerText =
-      "Distanz: " + distance.toFixed(2) + " km";
-
-    if (routeLine) {
-      map.fitBounds(routeLine.getBounds(), {
-        padding: [20, 20]
-      });
-    }
-
-  } catch (err) {
-    console.error(err);
-    alert("Routing Fehler: " + err.message);
-  }
-}
-
-// Undo letzter Punkt
-function undoPoint() {
-  if (points.length === 0) return;
-
-  points.pop();
-
-  const marker = markers.pop();
-  map.removeLayer(marker);
-
-  if (points.length > 1) {
-    drawRoute();
-  } else {
-    if (routeLine) map.removeLayer(routeLine);
-    document.getElementById("distance").innerText = "Distanz: 0 km";
-  }
-}
-
-// Reset alles
-function clearRoute() {
-  points = [];
-
-  markers.forEach(m => m.remove());
-  markers = [];
-
-  if (routeLine) map.removeLayer(routeLine);
-
-  document.getElementById("distance").innerText = "Distanz: 0 km";
-}
-
-// JSON Export
-function exportRoute() {
-  const dataStr = JSON.stringify(points);
-  const blob = new Blob([dataStr], {type: "application/json"});
-
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "route.json";
-  a.click();
-}
-
-// JSON Import
-function importRoute(event) {
-  const file = event.target.files[0];
-  const reader = new FileReader();
-
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-
-      if (!Array.isArray(data)) {
-        throw new Error("Ungültiges Format");
-      }
-
-      clearRoute();
-
-      points = data;
-
-      points.forEach(p => {
-        const marker = L.marker(p).addTo(map);
-        markers.push(marker);
-      });
-
-      drawRoute();
-
-    } catch (err) {
-      alert("Fehler beim Import: " + err.message);
-    }
-  };
-
-  reader.readAsText(file);
-}
-</script>
+<script src="app.js"></script>
 
 </body>
 </html>
