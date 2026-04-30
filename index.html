@@ -93,7 +93,6 @@ let points = [];
 let markers = [];
 let routeLine = null;
 
-const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjI1NDlkMzMzODE4MjQ4NjViZGI0Mjc3MDRhMjc5MjczIiwiaCI6Im11cm11cjY0In0=";
 
 // Klick → Punkt setzen
 map.on('click', function(e) {
@@ -109,19 +108,15 @@ map.on('click', function(e) {
 // Route berechnen
 async function drawRoute() {
   try {
-    const response = await fetch(
-      "https://api.heigit.org/v2/directions/foot-walking",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": apiKey,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          coordinates: points.map(p => [p[1], p[0]])
-        })
-      }
-    );
+const response = await fetch("/api/route", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    coordinates: points.map(p => [p[1], p[0]])
+  })
+});
 
     if (!response.ok) {
       throw new Error("API Fehler: " + response.status);
