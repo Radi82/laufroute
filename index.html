@@ -4,31 +4,51 @@ title: Laufroute
 ---
 
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-  <title>Laufroute</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    body { margin: 0; font-family: Arial; }
-    #map { height: 85vh; }
-    #controls { padding: 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laufroute</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 90vh;
+            margin-top: 20px;
+        }
+
+        .toolbar {
+            margin: 20px;
+        }
+    </style>
 </head>
+
 <body>
+
+<h1>Laufroute</h1>
+
+<div class="toolbar">
+    <button onclick="saveRoute()">Speichern</button>
+    <button onclick="loadRoute()">Laden</button>
+    <button onclick="resetRoute()">Reset</button>
+    <button onclick="undoLast()">Undo</button>
+    <button onclick="exportJSON()">Export JSON</button>
+    <input type="file" id="fileInput">
+    <span id="distance">Distanz: 0 km</span>
+</div>
 
 <div id="map"></div>
 
-<div id="controls">
-  <button onclick="saveRoute()">Speichern</button>
-  <button onclick="loadRoute()">Laden</button>
-  <button onclick="clearRoute()">Reset</button>
-  <button onclick="undoPoint()">Undo</button>
-  <button onclick="exportRoute()">Export JSON</button>
-  <input type="file" onchange="importRoute(event)">
-  <p>Distanz: <span id="distance">0</span> km</p>
-</div>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 const map = L.map('map').setView([48.137, 11.575], 13);
