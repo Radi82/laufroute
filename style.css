@@ -1,0 +1,49 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    color: #0f0;
+    font-family: "Courier New", monospace;
+}
+
+h1 {
+    margin: 20px;
+    color: #0f0;
+    text-shadow: 0 0 10px #0f0;
+}
+
+#map {
+    width: 100%;
+    height: 85vh;
+    filter: contrast(1.2) brightness(0.9);
+}
+
+.toolbar {
+    background: rgba(0, 255, 0, 0.05);
+    border: 1px solid #0f0;
+    padding: 15px;
+    margin: 20px;
+    box-shadow: 0 0 10px #0f0;
+}
+
+button {
+    background: #0f0;
+    color: #000;
+    border: 2px solid #0f0;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-family: "Courier New", monospace;
+    margin-right: 8px;
+    box-shadow: 0 0 10px #0f0 inset;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #000;
+    color: #0f0;
+    transform: scale(1.05);
+}
+
+button:active {
+    transform: scale(0.95);
+}
