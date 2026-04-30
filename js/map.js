@@ -1,59 +1,26 @@
-/************************************************************
- * 🚀 MAP MODULE
- ************************************************************/
+import { on } from "./eventBus.js";
 
 export let map;
+let runLine;
 
-let baseLayers;
-let activeLayerControl;
-let currentLayer;
-
-/************************************************************
- * 🗺️ INIT MAP
- ************************************************************/
 export function initMap() {
-
-    console.log("🗺️ MAP MODULE READY");
 
     map = L.map("map").setView([48.137, 11.575], 13);
 
-    const dark = L.tileLayer(
+    L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
         { maxZoom: 19 }
-    );
+    ).addTo(map);
 
-    const light = L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-        { maxZoom: 19 }
-    );
-
-    const satellite = L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        { maxZoom: 19 }
-    );
-
-    baseLayers = {
-        "🌙 Dark": dark,
-        "☀️ Light": light,
-        "🛰️ Satellite": satellite
-    };
-
-    // Default Layer
-    currentLayer = light;
-    currentLayer.addTo(map);
-
-    activeLayerControl = L.control.layers(baseLayers).addTo(map);
-
-    console.log("🗺️ MAP READY OK");
+    on("run:update", drawRun);
 }
 
-/************************************************************
- * 🔁 SWITCH BASE LAYER (GLOBAL EXPORT)
- ************************************************************/
-export function setBaseLayer(layer) {
-    if (!map || !currentLayer) return;
+function drawRun(data) {
 
-    map.removeLayer(currentLayer);
-    currentLayer = layer;
-    map.addLayer(layer);
+    if (runLine) map.removeLayer(runLine);
+
+    runLine = L.polyline(data.points, {
+        color: "#ff4444",
+        weight: 4
+    }).addTo(map);
 }
