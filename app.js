@@ -31,13 +31,19 @@ function decodePolyline(str, precision = 5) {
 
     return coordinates;
 }
-
+shadowPane: true
 const map = L.map('map').setView([48.137, 11.575], 13);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap & CARTO'
 }).addTo(map);
-
+L.circleMarker(point, {
+    radius: 6,
+    color: "#00ff66",
+    fillColor: "#00ff66",
+    fillOpacity: 0.6
+}).addTo(map);
 let points = [];
 let markers = [];
 let routeLine = null;
@@ -81,8 +87,8 @@ async function drawRoute() {
         if (routeLine) map.removeLayer(routeLine);
 
         routeLine = L.polyline(coords, {
-            color: 'blue',
-            weight: 4,
+            color: '00ff66',
+            weight: 3,
             opacity: 0.8
         }).addTo(map);
 
