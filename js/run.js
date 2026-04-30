@@ -1,43 +1,80 @@
-import { map } from "./map.js";
-import { on } from "./eventBus.js";
-import { saveRunToDB } from "./storage.js";
+/************************************************************
+ * 🏃 RUN MODULE
+ * Zuständig für:
+ * - Start / Stop
+ * - GPS Tracking
+ * - Distanzberechnung
+ * - Events an Map + Storage
+ ************************************************************/
 
-export let isRunning = false;
-export let runPoints = [];
+import { on, emit } from "./eventBus.js";
+import { getDistanceKm } from "./utils.js";
 
+let isRunning = false;
 let watchId = null;
+
+let runPoints = [];
 let startTime = null;
 let distance = 0;
-let last = null;
+let lastPoint = null;
 
 export function initRun() {
-    console.log("🏃 RUN READY");
+    console.log("🏃 RUN MODULE READY");
 
     on("run:toggle", toggleRun);
 }
-export function toggleRun() {
-    isRunning ? stopRun() : startRun();
-    emit("run:state", isRunning);
+
+function toggleRun() {
+    if (isRunning) {
+        stopRun();
+    } else {
+        startRun();
+    }
 }
 
 function startRun() {
+    if (!navigator.geolocation) {
+        alert("GPS wird nicht unterstützt");
+        return;
+    }
 
     isRunning = true;
     runPoints = [];
     distance = 0;
-    last = null;
+    lastPoint = null;
     startTime = Date.now();
 
-    watchId = navigator.geolocation.watchPosition(update);
+    emit("run:state", {
+        state: "running"
+    });
+
+    watchId = navigator.geolocation.watchPosition(
+        onPositionUpdate,
+        onPositionError,
+        {
+            enableHighAccuracy: true,
+            maximumAge: 1000,
+            timeout: 10000
+        }
+    );
 }
 
 async function stopRun() {
-
     isRunning = false;
 
-    if (watchId) navigator.geolocation.clearWatch(watchId);
+    if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
 
-    if (runPoints.length < 2) return;
+    emit("run:state", {
+        state: "stopped"
+    });
+
+    if (runPoints.length < 2) {
+        console.warn("Run nicht gespeichert: zu wenige Punkte");
+        return;
+    }
 
     const runData = {
         distance,
@@ -45,36 +82,30 @@ async function stopRun() {
         points: runPoints
     };
 
-    await saveRunToDB(runData);
-
     emit("run:finished", runData);
 }
 
-function update(pos) {
+function onPositionUpdate(pos) {
+    const point = [
+        pos.coords.latitude,
+        pos.coords.longitude
+    ];
 
-    const p = [pos.coords.latitude, pos.coords.longitude];
+    runPoints.push(point);
 
-    runPoints.push(p);
+    if (lastPoint) {
+        distance += getDistanceKm(lastPoint, point);
+    }
 
-    if (last) distance += getDistance(last, p);
-    last = p;
+    lastPoint = point;
 
-    emit("run:update", { points: runPoints, distance });
+    emit("run:update", {
+        points: runPoints,
+        distance
+    });
 }
 
-/************************************************************/
-function getDistance(a, b) {
-
-    const R = 6371;
-
-    const dLat = (b[0] - a[0]) * Math.PI / 180;
-    const dLng = (b[1] - a[1]) * Math.PI / 180;
-
-    const x =
-        Math.sin(dLat / 2) ** 2 +
-        Math.sin(dLng / 2) ** 2 *
-        Math.cos(a[0] * Math.PI / 180) *
-        Math.cos(b[0] * Math.PI / 180);
-
-    return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+function onPositionError(err) {
+    console.error("RUN GPS ERROR:", err);
+    alert("GPS Fehler beim Run Tracking: " + err.message);
 }

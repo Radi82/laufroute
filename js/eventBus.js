@@ -1,15 +1,28 @@
-console.log("📡 EVENT BUS READY");
-
 /************************************************************
- * 📡 SIMPLE PUB/SUB EVENT BUS
+ * 📡 EVENT BUS
+ * Kleines Pub/Sub-System für Modul-Kommunikation.
  ************************************************************/
+
 const events = {};
 
-export function on(event, fn) {
-    if (!events[event]) events[event] = [];
-    events[event].push(fn);
+export function on(eventName, callback) {
+    if (!events[eventName]) {
+        events[eventName] = [];
+    }
+
+    events[eventName].push(callback);
 }
 
-export function emit(event, data) {
-    (events[event] || []).forEach(fn => fn(data));
+export function emit(eventName, payload = null) {
+    if (!events[eventName]) return;
+
+    events[eventName].forEach(callback => {
+        try {
+            callback(payload);
+        } catch (err) {
+            console.error(`Event error in "${eventName}":`, err);
+        }
+    });
 }
+
+console.log("📡 EVENT BUS READY");
