@@ -31,7 +31,10 @@ async function drawRoute() {
         });
 
         const data = await res.json();
-        console.log("ROUTE RESPONSE:", data);
+    if (!data.features || !data.features.length) {
+      console.log("BAD RESPONSE:", data);
+      throw new Error("Keine Route erhalten");
+    }
         const coords = data.features[0].geometry.coordinates
             .map(c => [c[1], c[0]]);
 
