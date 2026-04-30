@@ -1,4 +1,16 @@
 /************************************************************
+ * 🧾 RUN HISTORY STORAGE
+ * Läufe werden im Browser gespeichert (LocalStorage)
+ ************************************************************/
+
+// Alle gespeicherten Runs laden (oder leeres Array)
+let runHistory = JSON.parse(localStorage.getItem("runHistory")) || [];
+
+// Startzeit des aktuellen Runs
+let runStartTime = null;
+
+
+/************************************************************
  * 🏃‍♂️ START / STOP RUN MODE (LIVE TRACKING) 
  ************************************************************/
 let isRunning = false;
@@ -22,11 +34,11 @@ function toggleRun() {
 
 
 /************************************************************
- * 🏃‍♂️ 4. START RUN
+ * 🏃‍♂️ 4. START RUN 🟢 START RUN → Startzeit setzen
  ************************************************************/
 function startRun() {
     isRunning = true;
-
+    runStartTime = Date.now();
     runPoints = [];
     runDistance = 0;
     lastPoint = null;
@@ -112,7 +124,7 @@ function drawRunLine() {
 }
 
 /************************************************************
- * 🛑 7. STOP RUN
+ * 🛑 3. STOP RUN → SPEICHERN
  ************************************************************/
 function stopRun() {
     isRunning = false;
@@ -127,6 +139,27 @@ function stopRun() {
 
     lastPoint = null;
 }
+/************************************************************
+ * 💾 RUN SPEICHERN (BEIM STOP)
+ ************************************************************/
+
+// Run Objekt erstellen
+const runData = {
+    id: Date.now().toString(),                 // eindeutige ID
+    date: new Date().toISOString(),            // Zeitstempel
+    distance: runDistance,                     // km
+    duration: Math.floor((Date.now() - runStartTime) / 1000), // Sekunden
+    points: runPoints                          // GPS Punkte
+};
+
+// Run zur History hinzufügen
+runHistory.push(runData);
+
+// Im Browser speichern
+localStorage.setItem("runHistory", JSON.stringify(runHistory));
+
+// UI aktualisieren
+renderRunHistory();
 
 /************************************************************
  * 🗺️ MAP INITIALISIERUNG
