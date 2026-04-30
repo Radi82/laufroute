@@ -1,4 +1,48 @@
 /************************************************************
+ * 🎛️ UI EVENT BINDINGS (KEIN INLINE JS MEHR)
+ ************************************************************/
+console.log("UI INIT DONE");
+function initUI() {
+
+    // 🏃 RUN CONTROL
+    document.getElementById("runBtn")
+        ?.addEventListener("click", toggleRun);
+
+    // ↩️ UNDO
+    document.getElementById("undoBtn")
+        ?.addEventListener("click", undoPoint);
+
+    // 🧹 RESET
+    document.getElementById("resetBtn")
+        ?.addEventListener("click", clearRoute);
+
+    // 💾 EXPORT
+    document.getElementById("exportBtn")
+        ?.addEventListener("click", exportRoute);
+
+    // 📍 LOCATION
+    document.getElementById("locBtn")
+        ?.addEventListener("click", goToMyLocation);
+
+    // 🔎 SEARCH
+    document.getElementById("searchBtn")
+        ?.addEventListener("click", searchLocation);
+
+    // 🔐 AUTH
+    document.getElementById("loginBtn")
+        ?.addEventListener("click", login);
+
+    document.getElementById("logoutBtn")
+        ?.addEventListener("click", logout);
+
+    // 📂 IMPORT FILE DIALOG
+    document.getElementById("importBtn")
+        ?.addEventListener("click", () => {
+            document.getElementById("fileInput")?.click();
+        });
+}
+
+/************************************************************
  * 🧠 GLOBAL STATE
  ************************************************************/
 let runHistory = [];
@@ -67,14 +111,15 @@ async function loadRunHistory() {
     renderRunHistory();
 }
 
-async function saveRunHistory() {
+async function saveRun(runData) {
+    runHistory.push(runData);
+
     const userId = await getUserId();
     if (!userId) return;
 
-    localStorage.setItem(
-        "runHistory_" + userId,
-        JSON.stringify(runHistory)
-    );
+    localStorage.setItem("runHistory_" + userId, JSON.stringify(runHistory));
+
+    renderRunHistory();
 }
 
 
@@ -339,5 +384,11 @@ function loadRun(id) {
 /************************************************************
  * 🚀 INIT
  ************************************************************/
-checkUser();
-loadRunHistory();
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("APP INIT OK");
+
+    initUI();
+    renderRunHistory();
+    checkUser();
+    loadRunHistory();
+});

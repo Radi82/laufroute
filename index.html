@@ -15,27 +15,37 @@
 <h2> Kleines DIY Projekt. Keine logs, Kein Tracking.. nix. Einfach ein nettes Tool um wege zu markieren.</h2>
 
 <div class="toolbar">
-    <button onclick="login()">🔐 Login</button>
-    <button onclick="logout()">🚪 Logout</button>
-    <span id="userInfo">Not logged in</span>
-    <h3>RUN HISTORY</h3>
-    <div id="historyList"></div>
-    <button onclick="undoPoint()">Undo</button>
-    <button onclick="clearRoute()">Reset</button>
-    <button onclick="exportRoute()">Export</button>
-    <button onclick="goToMyLocation()">📍 Standort</button>
+
+    <!-- 🧭 MAP ACTIONS -->
+    <button id="undoBtn">Undo</button>
+    <button id="resetBtn">Reset</button>
+    <button id="exportBtn">Export</button>
+    <button id="locBtn">📍 Standort</button>
+
+    <!-- 🔎 SEARCH -->
     <input id="searchInput" placeholder="Ort suchen..." />
-    <button onclick="searchLocation()">🔎</button>
-    <button onclick="toggleRun()" id="runBtn">▶ START RUN</button>
+    <button id="searchBtn">🔎</button>
+
+    <!-- 🏃 RUN -->
+    <button id="runBtn">▶ START RUN</button>
     <span id="runStatus">READY</span>
 
-    <button onclick="document.getElementById('fileInput').click()">
-        Import
-    </button>
+    <!-- 🔐 AUTH -->
+    <button id="loginBtn">🔐 Login</button>
+    <button id="logoutBtn">🚪 Logout</button>
+    <span id="userInfo">Not logged in</span>
 
-    <input id="fileInput" type="file" accept=".json" onchange="importRoute(event)" hidden>
+    <!-- 📂 IMPORT / EXPORT -->
+    <button id="importBtn">Import</button>
+    <input id="fileInput" type="file" accept=".json" hidden>
 
+    <!-- 📊 INFO -->
     <span id="distance">Distanz: 0 km</span>
+
+    <!-- 📜 HISTORY -->
+    <h3>RUN HISTORY</h3>
+    <div id="historyList"></div>
+
 </div>
 
 <div id="map"></div>
