@@ -8,7 +8,7 @@ title: Laufroute
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laufroute</title>
+    <title>Einfacher Laufrouten Maker V1.0</title>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -70,9 +70,9 @@ button:active {
 <div class="toolbar">
     <button onclick="saveRoute()">Speichern</button>
     <button onclick="loadRoute()">Laden</button>
-    <button onclick="resetRoute()">Reset</button>
-    <button onclick="undoLast()">Undo</button>
-    <button onclick="exportJSON()">Export JSON</button>
+    <button onclick="clearRoute()">Reset</button>
+    <button onclick="undoPoint()">Undo</button>
+    <button onclick="exportRoute()">Export JSON</button>
     <input id="fileInput" type="file" accept=".json" onchange="importRoute(event)" hidden>
     <span id="distance">Distanz: 0 km</span>
 </div>
@@ -136,8 +136,14 @@ async function drawRoute() {
 
     routeLine = L.polyline(coords, { color: 'blue' }).addTo(map);
 
-    document.getElementById("distance").innerText = distance.toFixed(2);
-
+    document.getElementById("distance").innerText = "Distanz: " + distance.toFixed(2) + " km";
+    
+    if (routeLine) {
+    map.fitBounds(routeLine.getBounds(), {
+    padding: [20, 20]
+  });
+}
+}
   } catch (err) {
     console.error(err);
     alert("Routing Fehler: " + err.message);
@@ -165,7 +171,7 @@ function undoPoint() {
 function clearRoute() {
   points = [];
 
-  markers.forEach(m => map.removeLayer(m));
+  markers.forEach(m => m.remove());
   markers = [];
 
   if (routeLine) map.removeLayer(routeLine);
@@ -190,9 +196,25 @@ function importRoute(event) {
   const reader = new FileReader();
 
   reader.onload = function(e) {
-    points = JSON.parse(e.target.result);
-
     clearRoute();
+    try {
+  const data = JSON.parse(e.target.result);
+
+  if (!Array.isArray(data)) throw new Error("Ungültiges Format");
+
+  clearRoute();
+  points = data;
+
+  points.forEach(p => {
+    const marker = L.marker(p).addTo(map);
+    markers.push(marker);
+  });
+
+  drawRoute();
+
+} catch (err) {
+  alert("Fehler beim Import: " + err.message);
+}
 
     points.forEach(p => {
       const marker = L.marker(p).addTo(map);
