@@ -73,7 +73,7 @@ button:active {
     <button onclick="resetRoute()">Reset</button>
     <button onclick="undoLast()">Undo</button>
     <button onclick="exportJSON()">Export JSON</button>
-    <input type="file" id="fileInput">
+    <input id="fileInput" type="file" accept=".json" onchange="importRoute(event)" hidden>
     <span id="distance">Distanz: 0 km</span>
 </div>
 
