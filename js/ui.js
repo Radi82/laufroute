@@ -4,34 +4,24 @@ export function initUI() {
 
     console.log("🎛️ UI READY");
 
-    document.getElementById("runBtn")
-        ?.addEventListener("click", () => {
-            emit("run:toggle");
-        });
+    const bind = (id, fn) => {
+        const el = document.getElementById(id);
+        if (!el) return console.warn("Missing:", id);
+        el.addEventListener("click", fn);
+    };
 
-    document.getElementById("undoBtn")
-        ?.addEventListener("click", () => emit("route:undo"));
+    bind("runBtn", () => emit("run:toggle"));
+    bind("undoBtn", () => emit("route:undo"));
+    bind("resetBtn", () => emit("route:reset"));
+    bind("exportBtn", () => emit("route:export"));
+    bind("locBtn", () => emit("map:locate"));
+    bind("searchBtn", () => emit("map:search"));
 
-    document.getElementById("resetBtn")
-        ?.addEventListener("click", () => emit("route:reset"));
+    bind("loginBtn", () => emit("auth:login"));
+    bind("logoutBtn", () => emit("auth:logout"));
 
-    document.getElementById("exportBtn")
-        ?.addEventListener("click", () => emit("route:export"));
+    const importBtn = document.getElementById("importBtn");
+    const fileInput = document.getElementById("fileInput");
 
-    document.getElementById("locBtn")
-        ?.addEventListener("click", () => emit("map:locate"));
-
-    document.getElementById("searchBtn")
-        ?.addEventListener("click", () => emit("map:search"));
-
-    document.getElementById("loginBtn")
-        ?.addEventListener("click", () => emit("auth:login"));
-
-    document.getElementById("logoutBtn")
-        ?.addEventListener("click", () => emit("auth:logout"));
-
-    document.getElementById("importBtn")
-        ?.addEventListener("click", () => {
-            document.getElementById("fileInput")?.click();
-        });
+    importBtn?.addEventListener("click", () => fileInput?.click());
 }
