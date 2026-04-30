@@ -455,3 +455,84 @@ async function searchLocation() {
         alert("Suchfehler");
     }
 }
+
+/************************************************************
+ * 📋 RUN HISTORY ANZEIGEN
+ * Zeigt alle gespeicherten Läufe in der UI
+ ************************************************************/
+function renderRunHistory() {
+    const container = document.getElementById("historyList");
+
+    // UI leeren
+    container.innerHTML = "";
+
+    // Neueste Runs zuerst anzeigen
+    runHistory.slice().reverse().forEach(run => {
+
+        const div = document.createElement("div");
+
+        // Styling (kannst du später schöner machen)
+        div.style.margin = "8px 0";
+        div.style.padding = "8px";
+        div.style.border = "1px solid #00ff66";
+        div.style.cursor = "pointer";
+
+        // Inhalt anzeigen
+        div.innerHTML = `
+            📅 ${new Date(run.date).toLocaleString()}<br>
+            🏃 ${run.distance.toFixed(2)} km<br>
+            ⏱ ${Math.floor(run.duration / 60)} min
+        `;
+
+        // Klick → Run laden
+        div.onclick = () => loadRun(run.id);
+
+        container.appendChild(div);
+    });
+}
+
+/************************************************************
+ * 📍 RUN LADEN
+ * Zeichnet gespeicherten Lauf auf die Karte
+ ************************************************************/
+function loadRun(id) {
+
+    // Run finden
+    const run = runHistory.find(r => r.id === id);
+    if (!run) return;
+
+    // Alte Route entfernen
+    if (routeLine) map.removeLayer(routeLine);
+
+    // Neue Route zeichnen
+    routeLine = L.polyline(run.points, {
+        color: "#ff4444",
+        weight: 4
+    }).addTo(map);
+
+    // Karte auf Route zoomen
+    map.fitBounds(routeLine.getBounds(), {
+        padding: [20, 20]
+    });
+}
+
+/************************************************************
+ * 🧹 RUN LÖSCHEN
+ ************************************************************/
+function deleteRun(id) {
+
+    // Run entfernen
+    runHistory = runHistory.filter(r => r.id !== id);
+
+    // Speicher aktualisieren
+    localStorage.setItem("runHistory", JSON.stringify(runHistory));
+
+    // UI neu rendern
+    renderRunHistory();
+}
+
+/************************************************************
+ * 🚀 APP START
+ * Lädt gespeicherte Runs beim Start
+ ************************************************************/
+renderRunHistory();
