@@ -1,4 +1,9 @@
-# 🏃 Laufroute Planer
+### Das ist ein reines DIY Projekt von mir weil mich die Kostenpflichtigen Apps nerven. ###
+### Simple, einfach gehalten, macht was es soll. Wenn jemand Verbesserungswünsche hat, einfach anschreiben :) ###
+### Alles noch Work in Progress :p ###
+
+
+# 🏃 Laufroute Planer (https://laufroute.vercel.app/)
 
 Eine einfache Web-App zum Erstellen von Laufstrecken auf Basis von echten Wegen (keine Luftlinien).
 
@@ -19,27 +24,4 @@ Eine einfache Web-App zum Erstellen von Laufstrecken auf Basis von echten Wegen 
 - OpenStreetMap (Kartendaten)
 - OpenRouteService API (Routing)
 
-## ⚙️ Installation / Nutzung
-
-1. Repository klonen oder herunterladen
-2. `index.html` öffnen
-
-ODER
-
-Direkt über GitHub Pages nutzen:
-https://DEINUSERNAME.github.io/laufroute/
-
-
-## 🔑 API-Key einrichten
-
-1. Registrieren bei OpenRouteService:
-   https://openrouteservice.org/
-
-2. API-Key erstellen
-
-3. Im Code eintragen:
-
-```javascript
-const apiKey = "DEIN_API_KEY";
-
-Have fun ;) 
+... 
