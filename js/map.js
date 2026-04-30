@@ -225,11 +225,17 @@ async function saveCurrentRoute() {
         return;
     }
 
-    await saveRouteToDB({
-        name: "Geplante Route",
-        points: routePoints,
-        distance: 0
-    });
+const name = prompt("Name der Route:", "Meine Route");
+if (!name) return;
+
+await saveRouteToDB({
+    name,
+    points: routePoints,
+    distance: 0
+});
+
+// direkt neu laden
+emit("routes:load");
 }
 
 /************************************************************
@@ -238,7 +244,18 @@ async function saveCurrentRoute() {
 function loadSavedRoute(route) {
     if (!route?.points?.length) return;
 
+    // alles sauber resetten
     clearRoute();
+
+    if (runLine) {
+        map.removeLayer(runLine);
+        runLine = null;
+    }
+
+    if (historyLine) {
+        map.removeLayer(historyLine);
+        historyLine = null;
+    }
 
     route.points.forEach(point => {
         addRoutePoint(point);
@@ -254,7 +271,17 @@ function exportRoute() {
         return;
     }
 
-    const gpx = generateGPX(routePoints);
+    const routeName = prompt("Name für GPX-Datei:", "laufroute");
+
+    if (!routeName) return;
+
+    const safeName = routeName
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/[^a-z0-9_-]/g, "");
+
+    const gpx = generateGPX(routePoints, routeName);
 
     const blob = new Blob([gpx], {
         type: "application/gpx+xml"
@@ -262,17 +289,25 @@ function exportRoute() {
 
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "route.gpx";
+    a.download = `${safeName || "laufroute"}.gpx`;
     a.click();
 
-    console.log("📤 GPX exportiert");
+    URL.revokeObjectURL(a.href);
+
+    console.log("📤 GPX exportiert:", a.download);
 }
 
-function generateGPX(points) {
+function generateGPX(points, name = "Laufroute") {
+    const createdAt = new Date().toISOString();
+
     const header = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="Laufroute App" xmlns="http://www.topografix.com/GPX/1/1">
+<metadata>
+<name>${escapeXML(name)}</name>
+<time>${createdAt}</time>
+</metadata>
 <trk>
-<name>Laufroute</name>
+<name>${escapeXML(name)}</name>
 <trkseg>`;
 
     const footer = `</trkseg>
@@ -283,9 +318,16 @@ function generateGPX(points) {
         return `<trkpt lat="${p[0]}" lon="${p[1]}"></trkpt>`;
     }).join("\n");
 
-    return header + trackPoints + footer;
+    return header + "\n" + trackPoints + "\n" + footer;
 }
-
+function escapeXML(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+}
 /************************************************************
  * 📥 IMPORT ROUTE
  ************************************************************/

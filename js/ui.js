@@ -155,7 +155,9 @@ function renderRoutes(routes) {
 
         div.querySelector(".delete-route-btn").addEventListener("click", (e) => {
             e.stopPropagation();
+            if (confirm("Route wirklich löschen?")) {
             emit("route:delete", route.id);
+}
         });
 
         div.querySelector(".rename-route-btn").addEventListener("click", (e) => {
