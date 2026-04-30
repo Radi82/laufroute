@@ -17,92 +17,135 @@
   <button onclick="saveRoute()">Speichern</button>
   <button onclick="loadRoute()">Laden</button>
   <button onclick="clearRoute()">Reset</button>
+  <button onclick="undoPoint()">Undo</button>
+  <button onclick="exportRoute()">Export JSON</button>
+  <input type="file" onchange="importRoute(event)">
   <p>Distanz: <span id="distance">0</span> km</p>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-const map = L.map('map').setView([48.137, 11.575], 13); // München
+const map = L.map('map').setView([48.137, 11.575], 13);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
 
 let points = [];
+let markers = [];
 let routeLine = null;
 
+const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjI1NDlkMzMzODE4MjQ4NjViZGI0Mjc3MDRhMjc5MjczIiwiaCI6Im11cm11cjY0In0=";
+
+// Klick → Punkt setzen
 map.on('click', function(e) {
-  points.push([e.latlng.lat, e.latlng.lng]);
-  L.marker(e.latlng).addTo(map);
+  const point = [e.latlng.lat, e.latlng.lng];
+  points.push(point);
+
+  const marker = L.marker(point).addTo(map);
+  markers.push(marker);
+
+  if (points.length > 1) drawRoute();
+});
+
+// Route berechnen
+async function drawRoute() {
+  try {
+    const response = await fetch(
+      "https://api.heigit.org/v2/directions/foot-walking",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": apiKey,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          coordinates: points.map(p => [p[1], p[0]])
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("API Fehler: " + response.status);
+    }
+
+    const data = await response.json();
+
+    const coords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+    const distance = data.features[0].properties.summary.distance / 1000;
+
+    if (routeLine) map.removeLayer(routeLine);
+
+    routeLine = L.polyline(coords, { color: 'blue' }).addTo(map);
+
+    document.getElementById("distance").innerText = distance.toFixed(2);
+
+  } catch (err) {
+    console.error(err);
+    alert("Routing Fehler: " + err.message);
+  }
+}
+
+// Undo letzter Punkt
+function undoPoint() {
+  if (points.length === 0) return;
+
+  points.pop();
+
+  const marker = markers.pop();
+  map.removeLayer(marker);
 
   if (points.length > 1) {
     drawRoute();
+  } else {
+    if (routeLine) map.removeLayer(routeLine);
+    document.getElementById("distance").innerText = "0";
   }
-});
+}
 
-async function drawRoute() {
-  const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjI1NDlkMzMzODE4MjQ4NjViZGI0Mjc3MDRhMjc5MjczIiwiaCI6Im11cm11cjY0In0=";
+// Reset alles
+function clearRoute() {
+  points = [];
 
-  const response = await fetch(
-    "https://api.openrouteservice.org/v2/directions/foot-walking",
-    {
-      method: "POST",
-      headers: {
-        "Authorization": apiKey,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        coordinates: points.map(p => [p[1], p[0]])
-      })
-    }
-  );
-
-  const data = await response.json();
-
-  const coords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
-  const distance = data.features[0].properties.summary.distance / 1000;
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
 
   if (routeLine) map.removeLayer(routeLine);
 
-  routeLine = L.polyline(coords, {color: 'blue'}).addTo(map);
-
-  document.getElementById("distance").innerText = distance.toFixed(2);
-}
-
-function saveRoute() {
-  localStorage.setItem("route", JSON.stringify(points));
-  alert("Gespeichert");
-}
-
-function loadRoute() {
-  const saved = JSON.parse(localStorage.getItem("route"));
-  if (!saved) return;
-
-  points = saved;
-
-  map.eachLayer(layer => {
-    if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-      map.removeLayer(layer);
-    }
-  });
-
-  points.forEach(p => {
-    L.marker(p).addTo(map);
-  });
-
-  drawRoute();
-}
-
-function clearRoute() {
-  points = [];
-  map.eachLayer(layer => {
-    if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-      map.removeLayer(layer);
-    }
-  });
-
   document.getElementById("distance").innerText = "0";
+}
+
+// JSON Export
+function exportRoute() {
+  const dataStr = JSON.stringify(points);
+  const blob = new Blob([dataStr], {type: "application/json"});
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "route.json";
+  a.click();
+}
+
+// JSON Import
+function importRoute(event) {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    points = JSON.parse(e.target.result);
+
+    clearRoute();
+
+    points.forEach(p => {
+      const marker = L.marker(p).addTo(map);
+      markers.push(marker);
+    });
+
+    drawRoute();
+  };
+
+  reader.readAsText(file);
 }
 </script>
 
