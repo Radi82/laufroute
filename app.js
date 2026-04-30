@@ -155,3 +155,60 @@ function importRoute(event) {
 
     reader.readAsText(event.target.files[0]);
 }
+function goToMyLocation() {
+    if (!navigator.geolocation) {
+        alert("Geolocation nicht unterstützt");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+
+            map.setView([lat, lng], 15);
+
+            L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup("Du bist hier")
+                .openPopup();
+        },
+        (err) => {
+            console.error(err);
+            alert("Standort konnte nicht geladen werden");
+        }
+    );
+}
+async function searchLocation() {
+    const query = document.getElementById("searchInput").value;
+
+    if (!query) return;
+
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.length) {
+            alert("Nichts gefunden");
+            return;
+        }
+
+        const place = data[0];
+
+        const lat = parseFloat(place.lat);
+        const lon = parseFloat(place.lon);
+
+        map.setView([lat, lon], 14);
+
+        L.marker([lat, lon])
+            .addTo(map)
+            .bindPopup(place.display_name)
+            .openPopup();
+
+    } catch (err) {
+        console.error(err);
+        alert("Suchfehler");
+    }
+}
