@@ -1,3 +1,10 @@
+/************************************************************
+ * 🎨 GLOBAL DESIGN
+ ************************************************************/
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -7,51 +14,47 @@ body {
 }
 
 h1 {
-    margin: 20px;
-    color: #0f0;
-    text-shadow: 0 0 10px #0f0;
-}
-
-/* HUD */
-#hud {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
+    margin: 14px 14px 4px;
     color: #00ff66;
-    font-size: 12px;
-    opacity: 0.7;
-    pointer-events: none;
+    text-shadow: 0 0 10px #00ff66;
+    font-size: 28px;
 }
 
-/* MAP */
-#map {
-    width: 100%;
-    height: 90vh;
-    filter: contrast(1.1) brightness(0.9) saturate(0.8);
-    pointer-events: auto;
-    z-index: 1;
+h2 {
+    margin: 0 14px 10px;
+    font-size: 14px;
+    font-weight: normal;
+    opacity: 0.75;
 }
 
-
-/* TOP BAR */
+/************************************************************
+ * 🧰 TOOLBAR
+ ************************************************************/
 .toolbar {
-    background: rgba(0, 20, 10, 0.85);
+    background: rgba(0, 20, 10, 0.9);
     border: 1px solid #00ff66;
-    padding: 12px;
+    padding: 10px;
     margin: 10px;
-    box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
+    box-shadow: 0 0 15px rgba(0, 255, 102, 0.25);
     backdrop-filter: blur(6px);
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
 }
 
-/* BUTTONS */
+/************************************************************
+ * 🔘 BUTTONS
+ ************************************************************/
 button {
     background: transparent;
     color: #00ff66;
     border: 1px solid #00ff66;
     padding: 10px 14px;
     font-size: 14px;
+    font-family: "Courier New", monospace;
     cursor: pointer;
-    margin-right: 8px;
     text-transform: uppercase;
     letter-spacing: 1px;
     transition: 0.2s;
@@ -62,25 +65,80 @@ button:hover {
     color: #000;
     box-shadow: 0 0 10px #00ff66;
 }
-/* INPUT */
-input {
+
+button:active {
+    transform: scale(0.96);
+}
+
+/************************************************************
+ * 🔎 INPUTS
+ ************************************************************/
+input,
+select {
     background: #00150a;
     border: 1px solid #00ff66;
     color: #00ff66;
-    padding: 8px;
+    padding: 10px;
+    font-family: "Courier New", monospace;
     outline: none;
 }
-/* DISTANCE TEXT */
-#distance {
-    margin-left: 10px;
+
+#searchInput {
+    min-width: 180px;
+}
+
+/************************************************************
+ * 📊 STATUS
+ ************************************************************/
+#distance,
+#runStatus,
+#userInfo {
     font-weight: bold;
     color: #00ff66;
+    padding: 6px 8px;
 }
-button:active {
-    transform: scale(0.95);
+
+/************************************************************
+ * 🗺️ MAP
+ ************************************************************/
+#map {
+    width: calc(100% - 20px);
+    height: 72vh;
+    margin: 10px;
+    border: 1px solid rgba(0, 255, 102, 0.35);
+    filter: contrast(1.05) brightness(0.95) saturate(0.9);
+    z-index: 1;
 }
+
+/************************************************************
+ * 📜 RUN HISTORY
+ ************************************************************/
+#historyList {
+    width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+    border-top: 1px solid rgba(0, 255, 102, 0.35);
+    padding-top: 8px;
+}
+
+.run-item,
+.route-item {
+    border: 1px solid rgba(0, 255, 102, 0.5);
+    padding: 8px;
+    margin: 6px 0;
+    cursor: pointer;
+}
+
+.run-item button,
+.route-item button {
+    margin-top: 6px;
+}
+
+/************************************************************
+ * 📍 ROUTES PANEL
+ ************************************************************/
 .routes-panel {
-    background: rgba(0, 20, 10, 0.92);
+    background: rgba(0, 20, 10, 0.95);
     border: 1px solid #00ff66;
     margin: 10px;
     padding: 12px;
@@ -100,4 +158,123 @@ button:active {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+/************************************************************
+ * 🛰️ HUD
+ ************************************************************/
+#hud {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    color: #00ff66;
+    font-size: 12px;
+    opacity: 0.6;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 6px;
+    border: 1px solid rgba(0, 255, 102, 0.25);
+}
+
+/************************************************************
+ * 📱 MOBILE VIEW
+ ************************************************************/
+@media (max-width: 768px) {
+
+    h1 {
+        font-size: 22px;
+        margin: 10px 10px 4px;
+    }
+
+    h2 {
+        font-size: 12px;
+        margin: 0 10px 8px;
+    }
+
+    .toolbar {
+        margin: 8px;
+        padding: 8px;
+        gap: 6px;
+        max-height: 34vh;
+        overflow-y: auto;
+    }
+
+    button {
+        flex: 1 1 calc(50% - 8px);
+        padding: 12px 10px;
+        font-size: 13px;
+        min-height: 44px;
+    }
+
+    #runBtn {
+        flex: 1 1 100%;
+        font-size: 16px;
+        font-weight: bold;
+        border-width: 2px;
+    }
+
+    #searchInput {
+        flex: 1 1 calc(70% - 8px);
+        min-width: 0;
+        min-height: 44px;
+    }
+
+    #searchBtn {
+        flex: 1 1 calc(30% - 8px);
+    }
+
+    #distance,
+    #runStatus,
+    #userInfo {
+        flex: 1 1 100%;
+        font-size: 13px;
+        padding: 4px;
+    }
+
+    #historyList {
+        max-height: 130px;
+        font-size: 13px;
+    }
+
+    #map {
+        height: 58vh;
+        margin: 8px;
+        width: calc(100% - 16px);
+    }
+
+    .routes-panel {
+        margin: 8px;
+        padding: 10px;
+    }
+
+    .routes-panel-actions button {
+        flex: 1 1 calc(50% - 8px);
+    }
+
+    #hud {
+        display: none;
+    }
+}
+
+/************************************************************
+ * 📱 VERY SMALL PHONES
+ ************************************************************/
+@media (max-width: 420px) {
+
+    button {
+        flex: 1 1 100%;
+    }
+
+    #searchInput,
+    #searchBtn {
+        flex: 1 1 100%;
+    }
+
+    .toolbar {
+        max-height: 38vh;
+    }
+
+    #map {
+        height: 54vh;
+    }
 }
