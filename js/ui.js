@@ -28,6 +28,7 @@ function bindButtons() {
     bind("resetBtn", () => emit("route:reset"));
     bind("exportBtn", () => emit("route:export"));
     bind("saveRouteBtn", () => emit("route:save"));
+    bind("loadRoutesBtn", () => emit("routes:load"));
     bind("locBtn", () => emit("map:locate"));
     bind("searchBtn", () => emit("map:search"));
     
@@ -88,6 +89,7 @@ function bindEventListeners() {
     on("run:state", updateRunState);
     on("run:saved", showRunSaved);
     on("history:loaded", renderHistory);
+    on("routes:loaded", renderRoutes);
 }
 
 function updateRunState(payload) {
@@ -116,6 +118,61 @@ function showRunSaved() {
     setTimeout(() => {
         status.innerText = "READY";
     }, 1500);
+}
+
+/************************************************************
+ * 📍 ROUTE LIST UI
+ ************************************************************/
+function renderRoutes(routes) {
+    const container = document.getElementById("routeList");
+
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (!routes.length) {
+        container.innerHTML = "<p>Keine Routen gespeichert.</p>";
+        return;
+    }
+
+    routes.forEach(route => {
+        const div = document.createElement("div");
+        div.className = "route-item";
+
+        div.innerHTML = `
+            <div>
+                📍 <strong>${route.name || "Unbenannte Route"}</strong><br>
+                📅 ${new Date(route.created_at).toLocaleString()}<br>
+                🧭 ${route.points?.length || 0} Punkte
+            </div>
+            <button class="rename-route-btn">Umbenennen</button>
+            <button class="delete-route-btn">Löschen</button>
+        `;
+
+        div.addEventListener("click", () => {
+            emit("route:loadSaved", route);
+        });
+
+        div.querySelector(".delete-route-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            emit("route:delete", route.id);
+        });
+
+        div.querySelector(".rename-route-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+
+            const name = prompt("Neuer Routenname:", route.name || "");
+
+            if (name) {
+                emit("route:rename", {
+                    id: route.id,
+                    name
+                });
+            }
+        });
+
+        container.appendChild(div);
+    });
 }
 
 /************************************************************

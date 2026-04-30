@@ -19,6 +19,10 @@ export function initStorage() {
     on("run:finished", saveRunToDB);
     on("storage:load", loadRunHistory);
     on("history:delete", deleteRun);
+    on("route:saveToDB", saveRouteToDB);
+    on("routes:load", loadRoutesFromDB);
+    on("route:delete", deleteRouteFromDB);
+    on("route:rename", ({ id, name }) => renameRouteInDB(id, name));
 }
 
 
@@ -110,8 +114,9 @@ async function deleteRun(runId) {
 
 
 /************************************************************
- * Speichere Route in DB
- * ************************************************************/
+ * 📍 ROUTE STORAGE
+ ************************************************************/
+
 export async function saveRouteToDB(routeData) {
     const user = await getUser();
 
@@ -120,12 +125,16 @@ export async function saveRouteToDB(routeData) {
         return;
     }
 
+    const name = prompt("Name der Route:", "Neue Route");
+
+    if (!name) return;
+
     const { error } = await window.supabaseClient
         .from("routes")
         .insert([
             {
                 user_id: user.id,
-                name: routeData.name || "Meine Route",
+                name,
                 points: routeData.points,
                 distance: routeData.distance || 0
             }
@@ -137,16 +146,14 @@ export async function saveRouteToDB(routeData) {
         return;
     }
 
-    alert("Route gespeichert");
+    await loadRoutesFromDB();
 }
 
-/************************************************************
- * Laden der Route
- * ************************************************************/
 export async function loadRoutesFromDB() {
     const user = await getUser();
 
     if (!user) {
+        emit("routes:loaded", []);
         return [];
     }
 
@@ -157,10 +164,52 @@ export async function loadRoutesFromDB() {
 
     if (error) {
         console.error("LOAD ROUTES ERROR:", error);
+        emit("routes:loaded", []);
         return [];
     }
 
+    emit("routes:loaded", data || []);
     return data || [];
+}
+
+export async function deleteRouteFromDB(routeId) {
+    const user = await getUser();
+
+    if (!user || !routeId) return;
+
+    const { error } = await window.supabaseClient
+        .from("routes")
+        .delete()
+        .eq("id", routeId)
+        .eq("user_id", user.id);
+
+    if (error) {
+        console.error("DELETE ROUTE ERROR:", error);
+        alert("Route konnte nicht gelöscht werden");
+        return;
+    }
+
+    await loadRoutesFromDB();
+}
+
+export async function renameRouteInDB(routeId, newName) {
+    const user = await getUser();
+
+    if (!user || !routeId || !newName) return;
+
+    const { error } = await window.supabaseClient
+        .from("routes")
+        .update({ name: newName })
+        .eq("id", routeId)
+        .eq("user_id", user.id);
+
+    if (error) {
+        console.error("RENAME ROUTE ERROR:", error);
+        alert("Route konnte nicht umbenannt werden");
+        return;
+    }
+
+    await loadRoutesFromDB();
 }
 
 

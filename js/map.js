@@ -10,7 +10,8 @@
 
 import { on } from "./eventBus.js";
 import { decodePolyline } from "./utils.js";
-import { saveRouteToDB, loadRoutesFromDB } from "./storage.js";
+import { saveRouteToDB } from "./storage.js";
+
 export let map;
 
 const apiUrl = "/api/route";
@@ -25,6 +26,9 @@ let locationMarker = null;
 let baseLayers = {};
 let currentBaseLayer = null;
 
+/************************************************************
+ * 🚀 INIT MAP
+ ************************************************************/
 export function initMap() {
     console.log("🗺️ MAP MODULE READY");
 
@@ -114,8 +118,9 @@ function setupEventListeners() {
     on("route:undo", undoRoutePoint);
     on("route:reset", clearRoute);
     on("route:export", exportRoute);
-    on("route:save", savePlannedRoute);
-    
+    on("route:save", saveCurrentRoute);
+    on("route:loadSaved", loadSavedRoute);
+
     on("map:locate", goToMyLocation);
     on("map:search", searchLocation);
     on("map:importFile", importRouteFile);
@@ -197,19 +202,6 @@ function undoRoutePoint() {
     }
 }
 
-async function savePlannedRoute() {
-    if (!routePoints.length) {
-        alert("Keine Route zum Speichern");
-        return;
-    }
-
-    await saveRouteToDB({
-        name: "Geplante Route",
-        points: routePoints,
-        distance: 0
-    });
-}
-
 function clearRoute() {
     routePoints = [];
 
@@ -224,8 +216,39 @@ function clearRoute() {
     setDistanceText("Distanz: 0 km");
 }
 
-function exportRoute() {
+/************************************************************
+ * 💾 SAVE CURRENT ROUTE
+ ************************************************************/
+async function saveCurrentRoute() {
+    if (!routePoints.length) {
+        alert("Keine Route zum Speichern");
+        return;
+    }
 
+    await saveRouteToDB({
+        name: "Geplante Route",
+        points: routePoints,
+        distance: 0
+    });
+}
+
+/************************************************************
+ * 📍 LOAD SAVED ROUTE
+ ************************************************************/
+function loadSavedRoute(route) {
+    if (!route?.points?.length) return;
+
+    clearRoute();
+
+    route.points.forEach(point => {
+        addRoutePoint(point);
+    });
+}
+
+/************************************************************
+ * 📤 GPX EXPORT
+ ************************************************************/
+function exportRoute() {
     if (!routePoints.length) {
         alert("Keine Route vorhanden");
         return;
@@ -246,7 +269,6 @@ function exportRoute() {
 }
 
 function generateGPX(points) {
-
     const header = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="Laufroute App" xmlns="http://www.topografix.com/GPX/1/1">
 <trk>
@@ -263,6 +285,7 @@ function generateGPX(points) {
 
     return header + trackPoints + footer;
 }
+
 /************************************************************
  * 📥 IMPORT ROUTE
  ************************************************************/
@@ -304,7 +327,6 @@ function importRouteFile(file) {
  * 📍 GPS / SEARCH
  ************************************************************/
 function goToMyLocation() {
-
     if (!navigator.geolocation) {
         alert("Dein Gerät unterstützt kein GPS");
         return;
@@ -312,11 +334,9 @@ function goToMyLocation() {
 
     console.log("📍 GPS Anfrage gestartet...");
 
-    // UI Feedback
     setDistanceText("📍 Standort wird gesucht...");
 
     navigator.geolocation.getCurrentPosition(
-
         (pos) => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
@@ -365,7 +385,7 @@ function goToMyLocation() {
         },
 
         {
-            enableHighAccuracy: false, // wichtig für Desktop!
+            enableHighAccuracy: false,
             timeout: 20000,
             maximumAge: 60000
         }
