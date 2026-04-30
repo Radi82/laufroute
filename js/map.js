@@ -262,17 +262,26 @@ function importRouteFile(file) {
  * 📍 GPS / SEARCH
  ************************************************************/
 function goToMyLocation() {
+
     if (!navigator.geolocation) {
-        alert("Geolocation nicht unterstützt");
+        alert("Dein Gerät unterstützt kein GPS");
         return;
     }
 
+    console.log("📍 GPS Anfrage gestartet...");
+
+    // UI Feedback
+    setDistanceText("📍 Standort wird gesucht...");
+
     navigator.geolocation.getCurrentPosition(
+
         (pos) => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
 
-            map.setView([lat, lng], 15);
+            console.log("✅ GPS OK:", lat, lng);
+
+            map.setView([lat, lng], 16);
 
             if (locationMarker) {
                 map.removeLayer(locationMarker);
@@ -282,19 +291,41 @@ function goToMyLocation() {
                 radius: 8,
                 color: "#00ff66",
                 fillColor: "#00ff66",
-                fillOpacity: 0.8
+                fillOpacity: 0.9
             }).addTo(map)
-                .bindPopup("Du bist hier")
-                .openPopup();
+              .bindPopup("📍 Du bist hier")
+              .openPopup();
+
+            setDistanceText("📍 Standort gefunden");
         },
+
         (err) => {
-            console.error("GPS ERROR:", err);
-            alert("Standort konnte nicht geladen werden: " + err.message);
+            console.error("❌ GPS ERROR:", err);
+
+            let msg = "";
+
+            switch (err.code) {
+                case 1:
+                    msg = "🚫 Standort-Zugriff blockiert.\n➡️ Browser erlauben!";
+                    break;
+                case 2:
+                    msg = "📡 Standort nicht verfügbar.\n➡️ WLAN oder GPS aktivieren.";
+                    break;
+                case 3:
+                    msg = "⏱ GPS Timeout.\n➡️ Versuch es nochmal.";
+                    break;
+                default:
+                    msg = "Unbekannter GPS Fehler";
+            }
+
+            alert(msg);
+            setDistanceText("❌ GPS Fehler");
         },
+
         {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 30000
+            enableHighAccuracy: false, // wichtig für Desktop!
+            timeout: 20000,
+            maximumAge: 60000
         }
     );
 }
