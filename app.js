@@ -1,3 +1,37 @@
+function decodePolyline(str, precision = 5) {
+    let index = 0, lat = 0, lng = 0, coordinates = [];
+    const factor = Math.pow(10, precision);
+
+    while (index < str.length) {
+        let result = 0, shift = 0, b;
+
+        do {
+            b = str.charCodeAt(index++) - 63;
+            result |= (b & 0x1f) << shift;
+            shift += 5;
+        } while (b >= 0x20);
+
+        const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lat += dlat;
+
+        result = 0;
+        shift = 0;
+
+        do {
+            b = str.charCodeAt(index++) - 63;
+            result |= (b & 0x1f) << shift;
+            shift += 5;
+        } while (b >= 0x20);
+
+        const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lng += dlng;
+
+        coordinates.push([lat / factor, lng / factor]);
+    }
+
+    return coordinates;
+}
+
 const map = L.map('map').setView([48.137, 11.575], 13);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -41,7 +75,7 @@ async function drawRoute() {
 
         const route = data.routes[0];
 
-        const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+        const coords = decodePolyline(route.geometry).map(c => [c[0], c[1]]);
         const distance = route.summary.distance / 1000;
 
         if (routeLine) map.removeLayer(routeLine);
