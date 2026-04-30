@@ -1,35 +1,32 @@
 /************************************************************
- * 🗺️ MAP MODULE (WITH LAYERS)
+ * 🚀 MAP MODULE
  ************************************************************/
 
-let mapInstance = null;
+export let map;
 
-let baseLayers = {};
-let activeLayerControl = null;
-
+let baseLayers;
+let activeLayerControl;
+let currentLayer;
 
 /************************************************************
- * 🚀 INIT MAP
+ * 🗺️ INIT MAP
  ************************************************************/
 export function initMap() {
 
     console.log("🗺️ MAP MODULE READY");
 
-    mapInstance = L.map("map").setView([48.137, 11.575], 13);
+    map = L.map("map").setView([48.137, 11.575], 13);
 
-    // 🌙 DARK
     const dark = L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
         { maxZoom: 19 }
     );
 
-    // ☀️ LIGHT
     const light = L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
         { maxZoom: 19 }
     );
 
-    // 🛰️ SATELLITE
     const satellite = L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         { maxZoom: 19 }
@@ -42,18 +39,21 @@ export function initMap() {
     };
 
     // Default Layer
-    dark.addTo(mapInstance);
+    currentLayer = light;
+    currentLayer.addTo(map);
 
-    // Layer Switch Control
-    activeLayerControl = L.control.layers(baseLayers).addTo(mapInstance);
+    activeLayerControl = L.control.layers(baseLayers).addTo(map);
 
-    return mapInstance;
+    console.log("🗺️ MAP READY OK");
 }
 
-
 /************************************************************
- * 📦 GET MAP
+ * 🔁 SWITCH BASE LAYER (GLOBAL EXPORT)
  ************************************************************/
-export function getMap() {
-    return mapInstance;
+export function setBaseLayer(layer) {
+    if (!map || !currentLayer) return;
+
+    map.removeLayer(currentLayer);
+    currentLayer = layer;
+    map.addLayer(layer);
 }
