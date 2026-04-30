@@ -31,7 +31,7 @@ async function drawRoute() {
         });
 
         const data = await res.json();
-
+        console.log("ROUTE RESPONSE:", data);
         const coords = data.features[0].geometry.coordinates
             .map(c => [c[1], c[0]]);
 
