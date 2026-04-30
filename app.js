@@ -536,3 +536,54 @@ function deleteRun(id) {
  * Lädt gespeicherte Runs beim Start
  ************************************************************/
 renderRunHistory();
+
+
+/************************************************************
+ * 🔐 LOGIN (GOOGLE)
+ ************************************************************/
+async function login() {
+    await supabaseClient.auth.signInWithOAuth({
+        provider: 'google'
+    });
+}
+
+/************************************************************
+ * 🚪 LOGOUT
+ ************************************************************/
+async function logout() {
+    await supabaseClient.auth.signOut();
+    document.getElementById("userInfo").innerText = "Not logged in";
+}
+
+
+/************************************************************
+ * 👤 USER SESSION CHECK
+ ************************************************************/
+async function checkUser() {
+    const { data } = await supabaseClient.auth.getUser();
+
+    if (data.user) {
+        document.getElementById("userInfo").innerText =
+            "👤 " + data.user.email;
+    } else {
+        document.getElementById("userInfo").innerText =
+            "Not logged in";
+    }
+}
+
+// beim Start ausführen
+checkUser();
+
+
+/************************************************************
+ * 🔄 AUTH STATE LISTENER
+ ************************************************************/
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (session?.user) {
+        document.getElementById("userInfo").innerText =
+            "👤 " + session.user.email;
+    } else {
+        document.getElementById("userInfo").innerText =
+            "Not logged in";
+    }
+});
