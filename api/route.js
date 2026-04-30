@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     }
 
     const response = await fetch(
-      "https://api.heigit.org/v2/directions/foot-walking",
+      "https://api.openrouteservice.org/v2/directions/foot-walking",
       {
         method: "POST",
         headers: {
