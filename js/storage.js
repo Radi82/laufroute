@@ -4,6 +4,8 @@
  * - Run speichern
  * - Run History laden
  * - Run löschen
+ * - Route Speichern
+ * - Route laden
  * - History Events senden
  ************************************************************/
 
@@ -19,6 +21,10 @@ export function initStorage() {
     on("history:delete", deleteRun);
 }
 
+
+/************************************************************
+ * Laden der Run History 
+ * ************************************************************/
 export async function loadRunHistory() {
     const user = await getUser();
 
@@ -45,6 +51,10 @@ export async function loadRunHistory() {
     return runHistory;
 }
 
+
+/************************************************************
+ * Speichere RUN in die DB 
+ * ************************************************************/
 async function saveRunToDB(runData) {
     const user = await getUser();
 
@@ -74,6 +84,10 @@ async function saveRunToDB(runData) {
     await loadRunHistory();
 }
 
+
+/************************************************************
+ * Lösche RUN 
+ * ************************************************************/
 async function deleteRun(runId) {
     const user = await getUser();
 
@@ -94,6 +108,65 @@ async function deleteRun(runId) {
     await loadRunHistory();
 }
 
+
+/************************************************************
+ * Speichere Route in DB
+ * ************************************************************/
+export async function saveRouteToDB(routeData) {
+    const user = await getUser();
+
+    if (!user) {
+        alert("Bitte einloggen, um Routen zu speichern");
+        return;
+    }
+
+    const { error } = await window.supabaseClient
+        .from("routes")
+        .insert([
+            {
+                user_id: user.id,
+                name: routeData.name || "Meine Route",
+                points: routeData.points,
+                distance: routeData.distance || 0
+            }
+        ]);
+
+    if (error) {
+        console.error("SAVE ROUTE ERROR:", error);
+        alert("Route konnte nicht gespeichert werden");
+        return;
+    }
+
+    alert("Route gespeichert");
+}
+
+/************************************************************
+ * Laden der Route
+ * ************************************************************/
+export async function loadRoutesFromDB() {
+    const user = await getUser();
+
+    if (!user) {
+        return [];
+    }
+
+    const { data, error } = await window.supabaseClient
+        .from("routes")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error("LOAD ROUTES ERROR:", error);
+        return [];
+    }
+
+    return data || [];
+}
+
+
+/************************************************************
+ * Get user
+ * ************************************************************/
 async function getUser() {
     const { data, error } = await window.supabaseClient.auth.getUser();
 

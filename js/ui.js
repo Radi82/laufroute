@@ -27,10 +27,10 @@ function bindButtons() {
     bind("undoBtn", () => emit("route:undo"));
     bind("resetBtn", () => emit("route:reset"));
     bind("exportBtn", () => emit("route:export"));
-
+    bind("saveRouteBtn", () => emit("route:save"));
     bind("locBtn", () => emit("map:locate"));
     bind("searchBtn", () => emit("map:search"));
-
+    
     bind("loginBtn", () => emit("auth:login"));
     bind("logoutBtn", () => emit("auth:logout"));
 

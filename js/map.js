@@ -10,7 +10,7 @@
 
 import { on } from "./eventBus.js";
 import { decodePolyline } from "./utils.js";
-
+import { saveRouteToDB, loadRoutesFromDB } from "./storage.js";
 export let map;
 
 const apiUrl = "/api/route";
@@ -114,7 +114,8 @@ function setupEventListeners() {
     on("route:undo", undoRoutePoint);
     on("route:reset", clearRoute);
     on("route:export", exportRoute);
-
+    on("route:save", savePlannedRoute);
+    
     on("map:locate", goToMyLocation);
     on("map:search", searchLocation);
     on("map:importFile", importRouteFile);
@@ -196,6 +197,19 @@ function undoRoutePoint() {
     }
 }
 
+async function savePlannedRoute() {
+    if (!routePoints.length) {
+        alert("Keine Route zum Speichern");
+        return;
+    }
+
+    await saveRouteToDB({
+        name: "Geplante Route",
+        points: routePoints,
+        distance: 0
+    });
+}
+
 function clearRoute() {
     routePoints = [];
 
@@ -211,16 +225,44 @@ function clearRoute() {
 }
 
 function exportRoute() {
-    const blob = new Blob([JSON.stringify(routePoints)], {
-        type: "application/json"
+
+    if (!routePoints.length) {
+        alert("Keine Route vorhanden");
+        return;
+    }
+
+    const gpx = generateGPX(routePoints);
+
+    const blob = new Blob([gpx], {
+        type: "application/gpx+xml"
     });
 
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "route.json";
+    a.download = "route.gpx";
     a.click();
+
+    console.log("📤 GPX exportiert");
 }
 
+function generateGPX(points) {
+
+    const header = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Laufroute App" xmlns="http://www.topografix.com/GPX/1/1">
+<trk>
+<name>Laufroute</name>
+<trkseg>`;
+
+    const footer = `</trkseg>
+</trk>
+</gpx>`;
+
+    const trackPoints = points.map(p => {
+        return `<trkpt lat="${p[0]}" lon="${p[1]}"></trkpt>`;
+    }).join("\n");
+
+    return header + trackPoints + footer;
+}
 /************************************************************
  * 📥 IMPORT ROUTE
  ************************************************************/
