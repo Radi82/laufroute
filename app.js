@@ -35,14 +35,26 @@ async function drawRoute() {
       console.log("BAD RESPONSE:", data);
       throw new Error("Keine Route erhalten");
     }
-        const coords = data.features[0].geometry.coordinates
-            .map(c => [c[1], c[0]]);
+if (!data.routes || !data.routes.length) {
+    console.log("BAD RESPONSE:", data);
+    throw new Error("Keine Route erhalten");
+}
 
-        const distance = data.features[0].properties.summary.distance / 1000;
+const route = data.routes[0];
+
+// Koordinaten (GeoJSON Format)
+const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+
+// Distanz
+const distance = route.summary.distance / 1000;
 
         if (routeLine) map.removeLayer(routeLine);
 
-        routeLine = L.polyline(coords, { color: 'blue' }).addTo(map);
+        routeLine = L.polyline(coords, {
+          color: 'blue',
+          weight: 4,
+          opacity: 0.8
+        }).addTo(map);
 
         document.getElementById("distance").innerText =
             "Distanz: " + distance.toFixed(2) + " km";
