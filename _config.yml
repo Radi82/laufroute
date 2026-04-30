@@ -1,0 +1,15 @@
+title: Laufroute
+description: Meine Laufroute-Website auf GitHub Pages
+theme: jekyll-theme-hacker
+baseurl: "/laufroute"
+url: "https://radi82.github.io"
+# GitHub Pages Standard-Einstellungen
+markdown: kramdown
+highlighter: rouge
+
+# Optional: Navigation ausblenden/einblenden
+show_downloads: false
+
+# Optional: Social Links
+github:
+  is_project_page: true
