@@ -1,3 +1,4 @@
+console.log("APP JS LOADED");
 /************************************************************
  * 🧠 GLOBAL STATE
  ************************************************************/
@@ -51,21 +52,30 @@ function initMap() {
  ************************************************************/
 function initUI() {
 
-    document.getElementById("runBtn")?.addEventListener("click", toggleRun);
-    document.getElementById("undoBtn")?.addEventListener("click", undoPoint);
-    document.getElementById("resetBtn")?.addEventListener("click", clearRoute);
-    document.getElementById("exportBtn")?.addEventListener("click", exportRoute);
-    document.getElementById("locBtn")?.addEventListener("click", goToMyLocation);
-    document.getElementById("searchBtn")?.addEventListener("click", searchLocation);
+    const bind = (id, fn) => {
+        const el = document.getElementById(id);
+        if (!el) {
+            console.warn("Missing element:", id);
+            return;
+        }
+        el.addEventListener("click", fn);
+    };
 
-    document.getElementById("loginBtn")?.addEventListener("click", login);
-    document.getElementById("logoutBtn")?.addEventListener("click", logout);
+    bind("runBtn", toggleRun);
+    bind("undoBtn", undoPoint);
+    bind("resetBtn", clearRoute);
+    bind("exportBtn", exportRoute);
+    bind("locBtn", goToMyLocation);
+    bind("searchBtn", searchLocation);
+    bind("loginBtn", login);
+    bind("logoutBtn", logout);
 
-    document.getElementById("importBtn")?.addEventListener("click", () => {
+    bind("importBtn", () => {
         document.getElementById("fileInput")?.click();
     });
-}
 
+    console.log("UI BINDINGS OK");
+}
 
 /************************************************************
  * 📍 MAP CLICK ROUTE
