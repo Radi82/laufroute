@@ -1,5 +1,5 @@
 import { map } from "./map.js";
-import { emit } from "./eventBus.js";
+import { on } from "./eventBus.js";
 import { saveRunToDB } from "./storage.js";
 
 export let isRunning = false;
@@ -13,12 +13,8 @@ let last = null;
 export function initRun() {
     console.log("🏃 RUN READY");
 
-    import("./eventBus.js").then(({ on }) => {
-
-        on("run:toggle", toggleRun);
-    });
+    on("run:toggle", toggleRun);
 }
-
 export function toggleRun() {
     isRunning ? stopRun() : startRun();
     emit("run:state", isRunning);

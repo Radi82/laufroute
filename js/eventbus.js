@@ -5,13 +5,11 @@ console.log("📡 EVENT BUS READY");
  ************************************************************/
 const events = {};
 
-export function on(event, callback) {
+export function on(event, fn) {
     if (!events[event]) events[event] = [];
-    events[event].push(callback);
+    events[event].push(fn);
 }
 
 export function emit(event, data) {
-    if (!events[event]) return;
-
-    events[event].forEach(cb => cb(data));
+    (events[event] || []).forEach(fn => fn(data));
 }
