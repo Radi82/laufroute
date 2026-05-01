@@ -13,7 +13,7 @@
 import { on, emit } from "./eventBus.js";
 import { decodePolyline } from "./utils.js";
 import { saveRouteToDB } from "./storage.js";
-
+import { log, error } from "./logger.js";
 export let map;
 
 /************************************************************

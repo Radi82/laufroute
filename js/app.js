@@ -2,13 +2,13 @@
  * 🚀 APP ENTRY POINT
  * Startet alle Module in sauberer Reihenfolge.
  ************************************************************/
-
+import { showToast } from "./toast.js";
 import { initMap } from "./map.js";
 import { initAuth, checkUser } from "./auth.js";
 import { initStorage, loadRunHistory } from "./storage.js";
 import { initRun } from "./run.js";
 import { initUI } from "./ui.js";
-import { log, warn, error } from "./logger.js";
+import { log, error } from "./logger.js";
 
 log("🚀 APP BOOT");
 

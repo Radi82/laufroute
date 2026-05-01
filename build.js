@@ -8,4 +8,4 @@ const output = template
 
 fs.writeFileSync("supabase.js", output);
 
-console.log("✅ supabase.js generated in root");
+console.log("✅ supabase.js generated");
