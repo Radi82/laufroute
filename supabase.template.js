@@ -1,10 +1,10 @@
 /************************************************************
- * 🔐 SUPABASE INIT EXAMPLE
- * Kopiere diese Datei zu supabase.js und trage deine Werte ein.
+ * 🔐 SUPABASE TEMPLATE
+ * Wird beim Build zu supabase.js ersetzt
  ************************************************************/
 
-const SUPABASE_URL = "https://DEIN-PROJEKT.supabase.co";
-const SUPABASE_KEY = "DEIN-PUBLISHABLE-KEY";
+const SUPABASE_URL = "__SUPABASE_URL__";
+const SUPABASE_KEY = "__SUPABASE_KEY__";
 
 window.supabaseClient = supabase.createClient(
     SUPABASE_URL,
