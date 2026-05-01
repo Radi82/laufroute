@@ -10,8 +10,9 @@
  ************************************************************/
 
 import { on, emit } from "./eventBus.js";
-import { log, error } from "./logger.js";
+import { error as logError, log } from "./logger.js";
 import { showToast } from "./toast.js";
+
 /************************************************************
  * 🚀 INIT AUTH
  * Registriert Login/Logout Events und Supabase Auth Listener
@@ -43,10 +44,11 @@ export function initAuth() {
  * Prüft beim App-Start, ob bereits ein User eingeloggt ist
  ************************************************************/
 export async function checkUser() {
-    const { data, error } = await window.supabaseClient.auth.getUser();
+    const { data, error: authError } =
+        await window.supabaseClient.auth.getUser();
 
-    if (error) {
-        error("AUTH CHECK ERROR:", error);
+    if (authError) {
+        logError("AUTH CHECK ERROR:", authError);
         updateUserInfo(null);
         return null;
     }
@@ -56,7 +58,7 @@ export async function checkUser() {
     updateUserInfo(user);
     emit("auth:changed", user);
 
-    // Wenn Session existiert, direkt Routen laden
+    // Wenn Session existiert, direkt Daten laden
     if (user) {
         emit("storage:load");
         emit("routes:load");
@@ -67,13 +69,14 @@ export async function checkUser() {
 
 /************************************************************
  * 👤 GET CURRENT USER
- * Kann von anderen Modulen genutzt werden, falls nötig
+ * Kann von anderen Modulen genutzt werden
  ************************************************************/
 export async function getCurrentUser() {
-    const { data, error } = await window.supabaseClient.auth.getUser();
+    const { data, error: userError } =
+        await window.supabaseClient.auth.getUser();
 
-    if (error) {
-        error("GET USER ERROR:", error);
+    if (userError) {
+        logError("GET USER ERROR:", userError);
         return null;
     }
 
@@ -85,12 +88,13 @@ export async function getCurrentUser() {
  * Startet Google OAuth Login
  ************************************************************/
 async function login() {
-    const { error } = await window.supabaseClient.auth.signInWithOAuth({
-        provider: "google"
-    });
+    const { error: loginError } =
+        await window.supabaseClient.auth.signInWithOAuth({
+            provider: "google"
+        });
 
-    if (error) {
-        error("LOGIN ERROR:", error);
+    if (loginError) {
+        logError("LOGIN ERROR:", loginError);
         showToast("Login fehlgeschlagen", "error");
     }
 }
@@ -100,10 +104,11 @@ async function login() {
  * Meldet User ab und leert UI-Listen
  ************************************************************/
 async function logout() {
-    const { error } = await window.supabaseClient.auth.signOut();
+    const { error: logoutError } =
+        await window.supabaseClient.auth.signOut();
 
-    if (error) {
-        error("LOGOUT ERROR:", error);
+    if (logoutError) {
+        logError("LOGOUT ERROR:", logoutError);
         showToast("Logout fehlgeschlagen", "error");
         return;
     }
@@ -113,6 +118,8 @@ async function logout() {
     // UI nach Logout leeren
     emit("history:loaded", []);
     emit("routes:loaded", []);
+
+    showToast("Logout erfolgreich");
 }
 
 /************************************************************
