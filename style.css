@@ -1,5 +1,31 @@
 /************************************************************
  * 🎨 GLOBAL DESIGN
+ * Tactical / Military UI
+ ************************************************************/
+:root {
+    --bg: #0b0f0b;
+    --bg-dark: #070a07;
+
+    --panel: #121812;
+    --panel-soft: #182018;
+
+    --border: #2f3f2f;
+    --border-strong: #4d674d;
+
+    --primary: #8fa878;
+    --primary-bright: #b8d8a0;
+
+    --text: #d8e0d0;
+    --text-dim: #8a9784;
+
+    --danger: #c96b5a;
+    --warning: #c9a85a;
+
+    --map-border: rgba(143, 168, 120, 0.45);
+}
+
+/************************************************************
+ * 🧱 RESET / BASE
  ************************************************************/
 * {
     box-sizing: border-box;
@@ -8,35 +34,47 @@
 body {
     margin: 0;
     padding: 0;
-    background: #050807;
-    font-family: "Courier New", monospace;
-    color: #00ff66;
+
+    background: var(--bg);
+    color: var(--text);
+
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 14px;
 }
 
+/************************************************************
+ * 🧾 HEADINGS
+ ************************************************************/
 h1 {
     margin: 14px 14px 4px;
-    color: #00ff66;
-    text-shadow: 0 0 10px #00ff66;
-    font-size: 28px;
+
+    color: var(--primary-bright);
+    font-size: 26px;
+    letter-spacing: 1px;
+    font-weight: 700;
+
+    text-shadow: none;
 }
 
 h2 {
     margin: 0 14px 10px;
-    font-size: 14px;
+
+    color: var(--text-dim);
+    font-size: 13px;
     font-weight: normal;
-    opacity: 0.75;
 }
 
 /************************************************************
  * 🧰 TOOLBAR
  ************************************************************/
 .toolbar {
-    background: rgba(0, 20, 10, 0.9);
-    border: 1px solid #00ff66;
-    padding: 10px;
     margin: 10px;
-    box-shadow: 0 0 15px rgba(0, 255, 102, 0.25);
-    backdrop-filter: blur(6px);
+    padding: 10px;
+
+    background: var(--panel);
+    border: 1px solid var(--border);
+    box-shadow: none;
+    backdrop-filter: blur(4px);
 
     display: flex;
     flex-wrap: wrap;
@@ -48,43 +86,72 @@ h2 {
  * 🔘 BUTTONS
  ************************************************************/
 button {
-    background: transparent;
-    color: #00ff66;
-    border: 1px solid #00ff66;
-    padding: 10px 14px;
-    font-size: 14px;
-    font-family: "Courier New", monospace;
+    background: var(--bg-dark);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 2px;
+
+    padding: 9px 14px;
+
+    font-size: 13px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-weight: 600;
+
     cursor: pointer;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: 0.2s;
+    letter-spacing: 0.8px;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        transform 0.08s ease;
 }
 
 button:hover {
-    background: #00ff66;
-    color: #000;
-    box-shadow: 0 0 10px #00ff66;
+    background: var(--panel-soft);
+    color: var(--primary-bright);
+    border-color: var(--primary);
 }
 
 button:active {
-    transform: scale(0.96);
+    transform: scale(0.97);
+}
+
+/* Wichtige Primäraktionen */
+#runBtn,
+#saveRouteBtn,
+#routesPanelBtn {
+    border-color: var(--border-strong);
 }
 
 /************************************************************
- * 🔎 INPUTS
+ * 🔎 INPUTS / SELECTS
  ************************************************************/
 input,
 select {
-    background: #00150a;
-    border: 1px solid #00ff66;
-    color: #00ff66;
-    padding: 10px;
-    font-family: "Courier New", monospace;
+    background: var(--bg-dark);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 2px;
+
+    padding: 9px 10px;
+
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 13px;
+
     outline: none;
 }
 
+input:focus,
+select:focus {
+    border-color: var(--primary);
+}
+
 #searchInput {
-    min-width: 180px;
+    min-width: 200px;
 }
 
 /************************************************************
@@ -93,9 +160,12 @@ select {
 #distance,
 #runStatus,
 #userInfo {
-    font-weight: bold;
-    color: #00ff66;
     padding: 6px 8px;
+
+    color: var(--primary-bright);
+    font-weight: 600;
+
+    border-left: 2px solid var(--border);
 }
 
 /************************************************************
@@ -104,9 +174,13 @@ select {
 #map {
     width: calc(100% - 20px);
     height: 72vh;
+
     margin: 10px;
-    border: 1px solid rgba(0, 255, 102, 0.35);
-    filter: contrast(1.05) brightness(0.95) saturate(0.9);
+
+    border: 1px solid var(--map-border);
+
+    filter: contrast(1.02) brightness(0.98) saturate(0.92);
+
     z-index: 1;
 }
 
@@ -116,17 +190,29 @@ select {
 #historyList {
     width: 100%;
     max-height: 220px;
+
     overflow-y: auto;
-    border-top: 1px solid rgba(0, 255, 102, 0.35);
+
+    border-top: 1px solid var(--border);
     padding-top: 8px;
 }
 
 .run-item,
 .route-item {
-    border: 1px solid rgba(0, 255, 102, 0.5);
-    padding: 8px;
     margin: 6px 0;
+    padding: 8px;
+
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+
+    color: var(--text);
     cursor: pointer;
+}
+
+.run-item:hover,
+.route-item:hover {
+    border-color: var(--primary);
+    background: var(--panel-soft);
 }
 
 .run-item button,
@@ -138,15 +224,24 @@ select {
  * 📍 ROUTES PANEL
  ************************************************************/
 .routes-panel {
-    background: rgba(0, 20, 10, 0.95);
-    border: 1px solid #00ff66;
     margin: 10px;
     padding: 12px;
-    box-shadow: 0 0 15px rgba(0, 255, 102, 0.25);
+
+    background: var(--panel);
+    border: 1px solid var(--border);
+
+    box-shadow: none;
 }
 
 .routes-panel.hidden {
     display: none;
+}
+
+.routes-panel h3 {
+    margin-top: 0;
+
+    color: var(--primary-bright);
+    letter-spacing: 0.5px;
 }
 
 #routeSelect {
@@ -161,19 +256,89 @@ select {
 }
 
 /************************************************************
+ * 📍 ACTIVE ROUTE INFO
+ ************************************************************/
+.active-route-info {
+    margin-bottom: 10px;
+    padding: 8px;
+
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.active-route-info strong {
+    color: var(--primary-bright);
+}
+
+/************************************************************
  * 🛰️ HUD
  ************************************************************/
 #hud {
     position: fixed;
-    bottom: 10px;
     right: 10px;
-    color: #00ff66;
-    font-size: 12px;
-    opacity: 0.6;
+    bottom: 10px;
+
+    padding: 6px 8px;
+
+    background: rgba(7, 10, 7, 0.85);
+    border: 1px solid var(--border);
+
+    color: var(--text-dim);
+    font-size: 11px;
+    line-height: 1.35;
+
+    opacity: 0.85;
     pointer-events: none;
-    background: rgba(0, 0, 0, 0.35);
-    padding: 6px;
-    border: 1px solid rgba(0, 255, 102, 0.25);
+}
+
+/************************************************************
+ * 🔔 TOAST SYSTEM
+ ************************************************************/
+#toastContainer {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+
+    z-index: 9999;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    padding: 10px 14px;
+
+    background: var(--panel);
+    border: 1px solid var(--border);
+
+    color: var(--text);
+    font-size: 13px;
+
+    opacity: 0;
+    transform: translateY(10px);
+    animation: toastIn 0.3s forwards;
+}
+
+.toast.success {
+    border-color: var(--primary);
+    color: var(--primary-bright);
+}
+
+.toast.error {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+@keyframes toastIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /************************************************************
@@ -182,39 +347,47 @@ select {
 @media (max-width: 768px) {
 
     h1 {
-        font-size: 22px;
         margin: 10px 10px 4px;
+        font-size: 22px;
     }
 
     h2 {
-        font-size: 12px;
         margin: 0 10px 8px;
+        font-size: 12px;
     }
 
     .toolbar {
         margin: 8px;
         padding: 8px;
+
         gap: 6px;
+
         max-height: 34vh;
         overflow-y: auto;
     }
 
     button {
         flex: 1 1 calc(50% - 8px);
-        padding: 12px 10px;
-        font-size: 13px;
+
         min-height: 44px;
+        padding: 12px 10px;
+
+        font-size: 12px;
     }
 
     #runBtn {
         flex: 1 1 100%;
-        font-size: 16px;
-        font-weight: bold;
+
+        font-size: 15px;
+        font-weight: 700;
+
         border-width: 2px;
+        border-color: var(--primary);
     }
 
     #searchInput {
         flex: 1 1 calc(70% - 8px);
+
         min-width: 0;
         min-height: 44px;
     }
@@ -227,8 +400,12 @@ select {
     #runStatus,
     #userInfo {
         flex: 1 1 100%;
+
         font-size: 13px;
         padding: 4px;
+
+        border-left: none;
+        border-top: 1px solid var(--border);
     }
 
     #historyList {
@@ -237,9 +414,10 @@ select {
     }
 
     #map {
-        height: 58vh;
-        margin: 8px;
         width: calc(100% - 16px);
+        height: 58vh;
+
+        margin: 8px;
     }
 
     .routes-panel {
@@ -249,6 +427,16 @@ select {
 
     .routes-panel-actions button {
         flex: 1 1 calc(50% - 8px);
+    }
+
+    #toastContainer {
+        right: 10px;
+        bottom: 10px;
+        left: 10px;
+    }
+
+    .toast {
+        width: 100%;
     }
 
     #hud {
@@ -276,55 +464,5 @@ select {
 
     #map {
         height: 54vh;
-    }
-}
-.active-route-info {
-    border: 1px solid rgba(0, 255, 102, 0.45);
-    padding: 8px;
-    margin-bottom: 10px;
-    font-size: 13px;
-    color: #00ff66;
-    background: rgba(0, 255, 102, 0.08);
-}
-/************************************************************
- * 🔔 TOAST SYSTEM
- ************************************************************/
-#toastContainer {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 9999;
-
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.toast {
-    background: rgba(0, 20, 10, 0.95);
-    border: 1px solid #00ff66;
-    color: #00ff66;
-    padding: 10px 14px;
-    font-size: 13px;
-    box-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
-
-    opacity: 0;
-    transform: translateY(10px);
-    animation: toastIn 0.3s forwards;
-}
-
-.toast.success {
-    border-color: #00ff66;
-}
-
-.toast.error {
-    border-color: #ff4444;
-    color: #ff4444;
-}
-
-@keyframes toastIn {
-    to {
-        opacity: 1;
-        transform: translateY(0);
     }
 }
