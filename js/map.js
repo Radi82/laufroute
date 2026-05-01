@@ -11,7 +11,7 @@
  ************************************************************/
 import { showToast } from "./toast.js";
 import { on, emit } from "./eventBus.js";
-import { decodePolyline } from "./utils.js";
+import { decodePolyline, getDistanceKm } from "./utils.js";
 import { saveRouteToDB } from "./storage.js";
 import { log, error } from "./logger.js";
 export let map;
@@ -236,7 +236,6 @@ function loadSavedRoute(route) {
 
     clearRoute();
 
-    // alte History / Run Linien entfernen
     if (runLine) {
         map.removeLayer(runLine);
         runLine = null;
@@ -247,20 +246,39 @@ function loadSavedRoute(route) {
         historyLine = null;
     }
 
-    // 🔥 neue aktive Route zeichnen
     plannedRouteLine = L.polyline(route.points, {
-        color: "#00e5ff",   // 🔵 Cyan (anders als grün)
-        weight: 5,          // dicker
+        color: "#00e5ff",
+        weight: 5,
         opacity: 0.9
     }).addTo(map);
 
-    // 👀 Fokus auf Route
+    const distance = route.distance && route.distance > 0
+        ? route.distance
+        : calculateRouteDistance(route.points);
+
+    setDistanceText(`Distanz: ${distance.toFixed(2)} km`);
+
     map.fitBounds(plannedRouteLine.getBounds(), {
         padding: [20, 20]
     });
 
     log("📍 Active Route geladen:", route.name);
 }
+
+/************************************************************
+ * 📏 ROUTE DISTANZ BERECHNEN
+ ************************************************************/
+function calculateRouteDistance(points) {
+    let distance = 0;
+
+    for (let i = 1; i < points.length; i++) {
+        distance += getDistanceKm(points[i - 1], points[i]);
+    }
+
+    return distance;
+}
+
+
 /************************************************************
  * 📤 GPX EXPORT
  ************************************************************/
