@@ -282,7 +282,13 @@ function exportRoute() {
 
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = name + ".gpx";
+    const safeName = name
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_-]/g, "");
+
+a.download = `${safeName || "laufroute"}.gpx`;
     a.click();
 }
 /************************************************************
@@ -327,23 +333,51 @@ function goToMyLocation() {
         return;
     }
 
-    navigator.geolocation.getCurrentPosition((pos) => {
+    showToast("Standort wird gesucht...");
 
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
 
-        map.setView([lat, lng], 16);
+            map.setView([lat, lng], 16);
 
-        if (locationMarker) map.removeLayer(locationMarker);
+            if (locationMarker) map.removeLayer(locationMarker);
 
-        locationMarker = L.circleMarker([lat, lng], {
-            radius: 8,
-            color: "#00ff66"
-        }).addTo(map);
+            locationMarker = L.circleMarker([lat, lng], {
+                radius: 8,
+                color: "#00ff66",
+                fillColor: "#00ff66",
+                fillOpacity: 0.8
+            })
+                .addTo(map)
+                .bindPopup("📍 Du bist hier")
+                .openPopup();
 
-    });
+            showToast("Standort gefunden");
+        },
+
+        (err) => {
+            error("GPS ERROR:", err);
+
+            if (err.code === 1) {
+                showToast("Standort-Zugriff blockiert", "error");
+            } else if (err.code === 2) {
+                showToast("Standort nicht verfügbar", "error");
+            } else if (err.code === 3) {
+                showToast("GPS Timeout", "error");
+            } else {
+                showToast("GPS Fehler", "error");
+            }
+        },
+
+        {
+            enableHighAccuracy: false,
+            timeout: 20000,
+            maximumAge: 60000
+        }
+    );
 }
-
 /************************************************************
  * 🔎 SEARCH
  ************************************************************/
