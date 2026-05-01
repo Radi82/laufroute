@@ -9,6 +9,7 @@
 
 import { on, emit } from "./eventBus.js";
 import { formatDuration } from "./utils.js";
+import { log, warn, error } from "./logger.js";
 
 /************************************************************
  * 📦 UI STATE
@@ -19,7 +20,7 @@ let cachedRoutes = [];
  * 🚀 INIT UI
  ************************************************************/
 export function initUI() {
-    console.log("🎛️ UI MODULE READY");
+    log("🎛️ UI MODULE READY");
 
     bindButtons();
     bindFileInput();
@@ -61,7 +62,7 @@ function bind(id, handler) {
     const el = document.getElementById(id);
 
     if (!el) {
-        console.warn("Missing UI element:", id);
+        warn("Missing UI element:", id);
         return;
     }
 
@@ -159,9 +160,15 @@ function renderRoutesDropdown(routes) {
     cachedRoutes = routes || [];
 
     const select = document.getElementById("routeSelect");
+    const activeInfo = document.getElementById("activeRouteInfo");
+
     if (!select) return;
 
     select.innerHTML = `<option value="">Route auswählen...</option>`;
+
+    if (activeInfo) {
+        activeInfo.innerText = "Keine Route ausgewählt";
+    }
 
     if (!cachedRoutes.length) {
         const option = document.createElement("option");
@@ -177,6 +184,28 @@ function renderRoutesDropdown(routes) {
         option.innerText = route.name || "Unbenannte Route";
         select.appendChild(option);
     });
+
+    select.onchange = () => {
+        updateActiveRouteInfo();
+    };
+}
+
+function updateActiveRouteInfo() {
+    const route = getSelectedRoute();
+    const activeInfo = document.getElementById("activeRouteInfo");
+
+    if (!activeInfo) return;
+
+    if (!route) {
+        activeInfo.innerText = "Keine Route ausgewählt";
+        return;
+    }
+
+    activeInfo.innerHTML = `
+        📍 Aktive Auswahl: <strong>${route.name || "Unbenannte Route"}</strong><br>
+        🧭 Punkte: ${route.points?.length || 0}<br>
+        📅 ${new Date(route.created_at).toLocaleString()}
+    `;
 }
 
 function getSelectedRoute() {
@@ -190,7 +219,7 @@ function loadSelectedRoute() {
     const route = getSelectedRoute();
 
     if (!route) {
-        alert("Bitte zuerst eine Route auswählen");
+        showToast("Bitte zuerst eine Route auswählen", "error");
         return;
     }
 
@@ -201,7 +230,7 @@ function exportSelectedRoute() {
     const route = getSelectedRoute();
 
     if (!route) {
-        alert("Bitte zuerst eine Route auswählen");
+        showToast("Bitte zuerst eine Route auswählen", "error");
         return;
     }
 
@@ -212,7 +241,7 @@ function renameSelectedRoute() {
     const route = getSelectedRoute();
 
     if (!route) {
-        alert("Bitte zuerst eine Route auswählen");
+        showToast("Bitte zuerst eine Route auswählen", "error");
         return;
     }
 
@@ -230,7 +259,7 @@ function deleteSelectedRoute() {
     const route = getSelectedRoute();
 
     if (!route) {
-        alert("Bitte zuerst eine Route auswählen");
+        showToast("Bitte zuerst eine Route auswählen", "error");
         return;
     }
 

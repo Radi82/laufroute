@@ -36,7 +36,7 @@ let currentBaseLayer = null;
  * 🚀 INIT
  ************************************************************/
 export function initMap() {
-    console.log("🗺️ MAP MODULE READY");
+    log("🗺️ MAP MODULE READY");
 
     if (!window.L) throw new Error("Leaflet nicht geladen");
 
@@ -46,7 +46,7 @@ export function initMap() {
     setupMapEvents();
     setupEventListeners();
 
-    console.log("🗺️ MAP READY OK");
+    log("🗺️ MAP READY OK");
 }
 
 /************************************************************
@@ -168,7 +168,7 @@ async function drawPlannedRoute() {
         });
 
     } catch (err) {
-        console.error("ROUTING ERROR:", err);
+        error("ROUTING ERROR:", err);
     }
 }
 
@@ -211,7 +211,7 @@ function clearRoute() {
 async function saveCurrentRoute() {
 
     if (!routePoints.length) {
-        alert("Keine Route vorhanden");
+        showToast("Keine Route vorhanden", "error");
         return;
     }
 
@@ -236,16 +236,38 @@ function loadSavedRoute(route) {
 
     clearRoute();
 
-    route.points.forEach(p => addRoutePoint(p));
-}
+    // alte History / Run Linien entfernen
+    if (runLine) {
+        map.removeLayer(runLine);
+        runLine = null;
+    }
 
+    if (historyLine) {
+        map.removeLayer(historyLine);
+        historyLine = null;
+    }
+
+    // 🔥 neue aktive Route zeichnen
+    plannedRouteLine = L.polyline(route.points, {
+        color: "#00e5ff",   // 🔵 Cyan (anders als grün)
+        weight: 5,          // dicker
+        opacity: 0.9
+    }).addTo(map);
+
+    // 👀 Fokus auf Route
+    map.fitBounds(plannedRouteLine.getBounds(), {
+        padding: [20, 20]
+    });
+
+    log("📍 Active Route geladen:", route.name);
+}
 /************************************************************
  * 📤 GPX EXPORT
  ************************************************************/
 function exportRoute() {
 
     if (!routePoints.length) {
-        alert("Keine Route vorhanden");
+        showToast("Keine Route vorhanden", "error");
         return;
     }
 
@@ -268,7 +290,7 @@ function exportRoute() {
  ************************************************************/
 function exportSavedRoute(route) {
     if (!route?.points?.length) {
-        alert("Route leer");
+        showToast("Route leer", "error");
         return;
     }
 
@@ -293,7 +315,7 @@ function exportSavedRoute(route) {
 
     URL.revokeObjectURL(a.href);
 
-    console.log("📤 GPX aus gespeicherter Route exportiert:", a.download);
+    log("📤 GPX aus gespeicherter Route exportiert:", a.download);
 }
 /************************************************************
  * 📍 GPS
@@ -301,7 +323,7 @@ function exportSavedRoute(route) {
 function goToMyLocation() {
 
     if (!navigator.geolocation) {
-        alert("Kein GPS verfügbar");
+        showToast("Kein GPS verfügbar", "error");
         return;
     }
 

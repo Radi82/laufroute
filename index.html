@@ -8,6 +8,7 @@
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
+<div id="toastContainer"></div>
 
 <body>
 
@@ -50,6 +51,9 @@
     <select id="routeSelect">
         <option value="">Route auswählen...</option>
     </select>
+<div id="activeRouteInfo" class="active-route-info">
+    Keine Route ausgewählt
+</div>
 
     <div class="routes-panel-actions">
         <button id="loadSelectedRouteBtn">Laden</button>

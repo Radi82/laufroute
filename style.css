@@ -278,3 +278,53 @@ select {
         height: 54vh;
     }
 }
+.active-route-info {
+    border: 1px solid rgba(0, 255, 102, 0.45);
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: #00ff66;
+    background: rgba(0, 255, 102, 0.08);
+}
+/************************************************************
+ * 🔔 TOAST SYSTEM
+ ************************************************************/
+#toastContainer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    background: rgba(0, 20, 10, 0.95);
+    border: 1px solid #00ff66;
+    color: #00ff66;
+    padding: 10px 14px;
+    font-size: 13px;
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
+
+    opacity: 0;
+    transform: translateY(10px);
+    animation: toastIn 0.3s forwards;
+}
+
+.toast.success {
+    border-color: #00ff66;
+}
+
+.toast.error {
+    border-color: #ff4444;
+    color: #ff4444;
+}
+
+@keyframes toastIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

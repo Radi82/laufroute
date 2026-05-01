@@ -13,7 +13,7 @@
  ************************************************************/
 
 import { on, emit } from "./eventBus.js";
-
+import { showToast } from "./toast.js";
 /************************************************************
  * 📦 STATE
  ************************************************************/
@@ -24,7 +24,7 @@ let runHistory = [];
  * Registriert alle Storage-relevanten Events
  ************************************************************/
 export function initStorage() {
-    console.log("💾 STORAGE MODULE READY");
+    log("💾 STORAGE MODULE READY");
 
     // Runs
     on("run:finished", saveRunToDB);
@@ -56,7 +56,7 @@ export async function loadRunHistory() {
         .order("created_at", { ascending: false });
 
     if (error) {
-        console.error("LOAD HISTORY ERROR:", error);
+        error("LOAD HISTORY ERROR:", error);
         emit("history:loaded", []);
         return [];
     }
@@ -77,7 +77,7 @@ async function saveRunToDB(runData) {
     const user = await getUser();
 
     if (!user) {
-        alert("Bitte einloggen, um Runs zu speichern");
+        showToast("Bitte einloggen, um Runs zu speichern", "error");
         return;
     }
 
@@ -93,8 +93,8 @@ async function saveRunToDB(runData) {
         ]);
 
     if (error) {
-        console.error("SAVE RUN ERROR:", error);
-        alert("Run konnte nicht gespeichert werden");
+        error("SAVE RUN ERROR:", error);
+        showToast("Run konnte nicht gespeichert werden", "error");
         return;
     }
 
@@ -120,8 +120,8 @@ async function deleteRun(runId) {
         .eq("user_id", user.id);
 
     if (error) {
-        console.error("DELETE RUN ERROR:", error);
-        alert("Run konnte nicht gelöscht werden");
+        error("DELETE RUN ERROR:", error);
+        showToast("Run konnte nicht gelöscht werden", "error");
         return;
     }
 
@@ -143,7 +143,7 @@ export async function saveRouteToDB(routeData) {
     const user = await getUser();
 
     if (!user) {
-        alert("Bitte einloggen, um Routen zu speichern");
+        showToast("Bitte einloggen, um Routen zu speichern", "error");
         return;
     }
 
@@ -159,8 +159,8 @@ export async function saveRouteToDB(routeData) {
         ]);
 
     if (error) {
-        console.error("SAVE ROUTE ERROR:", error);
-        alert("Route konnte nicht gespeichert werden");
+        error("SAVE ROUTE ERROR:", error);
+        showToast("Route konnte nicht gespeichert werden", "error");
         return;
     }
 
@@ -185,7 +185,7 @@ export async function loadRoutesFromDB() {
         .order("created_at", { ascending: false });
 
     if (error) {
-        console.error("LOAD ROUTES ERROR:", error);
+        error("LOAD ROUTES ERROR:", error);
         emit("routes:loaded", []);
         return [];
     }
@@ -211,8 +211,8 @@ export async function deleteRouteFromDB(routeId) {
         .eq("user_id", user.id);
 
     if (error) {
-        console.error("DELETE ROUTE ERROR:", error);
-        alert("Route konnte nicht gelöscht werden");
+        error("DELETE ROUTE ERROR:", error);
+        showToast("Route konnte nicht gelöscht werden", "error");
         return;
     }
 
@@ -237,8 +237,8 @@ export async function renameRouteInDB(routeId, newName) {
         .eq("user_id", user.id);
 
     if (error) {
-        console.error("RENAME ROUTE ERROR:", error);
-        alert("Route konnte nicht umbenannt werden");
+        error("RENAME ROUTE ERROR:", error);
+        showToast("Route konnte nicht umbenannt werden", "error");
         return;
     }
 
@@ -253,7 +253,7 @@ async function getUser() {
     const { data, error } = await window.supabaseClient.auth.getUser();
 
     if (error) {
-        console.error("GET USER ERROR:", error);
+        error("GET USER ERROR:", error);
         return null;
     }
 

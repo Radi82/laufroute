@@ -10,13 +10,13 @@
  ************************************************************/
 
 import { on, emit } from "./eventBus.js";
-
+import { log, warn, error } from "./logger.js";
 /************************************************************
  * 🚀 INIT AUTH
  * Registriert Login/Logout Events und Supabase Auth Listener
  ************************************************************/
 export function initAuth() {
-    console.log("🔐 AUTH MODULE READY");
+    log("🔐 AUTH MODULE READY");
 
     // UI Events
     on("auth:login", login);
@@ -45,7 +45,7 @@ export async function checkUser() {
     const { data, error } = await window.supabaseClient.auth.getUser();
 
     if (error) {
-        console.error("AUTH CHECK ERROR:", error);
+        error("AUTH CHECK ERROR:", error);
         updateUserInfo(null);
         return null;
     }
@@ -72,7 +72,7 @@ export async function getCurrentUser() {
     const { data, error } = await window.supabaseClient.auth.getUser();
 
     if (error) {
-        console.error("GET USER ERROR:", error);
+        error("GET USER ERROR:", error);
         return null;
     }
 
@@ -89,8 +89,8 @@ async function login() {
     });
 
     if (error) {
-        console.error("LOGIN ERROR:", error);
-        alert("Login fehlgeschlagen");
+        error("LOGIN ERROR:", error);
+        showToast("Login fehlgeschlagen", "error");
     }
 }
 
@@ -102,8 +102,8 @@ async function logout() {
     const { error } = await window.supabaseClient.auth.signOut();
 
     if (error) {
-        console.error("LOGOUT ERROR:", error);
-        alert("Logout fehlgeschlagen");
+        error("LOGOUT ERROR:", error);
+        showToast("Logout fehlgeschlagen", "error");
         return;
     }
 

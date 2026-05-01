@@ -9,6 +9,7 @@
 
 import { on, emit } from "./eventBus.js";
 import { getDistanceKm } from "./utils.js";
+import { log, warn, error } from "./logger.js";
 
 let isRunning = false;
 let watchId = null;
@@ -19,7 +20,7 @@ let distance = 0;
 let lastPoint = null;
 
 export function initRun() {
-    console.log("🏃 RUN MODULE READY");
+    log("🏃 RUN MODULE READY");
 
     on("run:toggle", toggleRun);
 }
@@ -34,7 +35,7 @@ function toggleRun() {
 
 function startRun() {
     if (!navigator.geolocation) {
-        alert("GPS wird nicht unterstützt");
+        showToast("GPS wird nicht unterstützt", "error");
         return;
     }
 
@@ -72,7 +73,7 @@ async function stopRun() {
     });
 
     if (runPoints.length < 2) {
-        console.warn("Run nicht gespeichert: zu wenige Punkte");
+        warn("Run nicht gespeichert: zu wenige Punkte");
         return;
     }
 
@@ -106,6 +107,6 @@ function onPositionUpdate(pos) {
 }
 
 function onPositionError(err) {
-    console.error("RUN GPS ERROR:", err);
+    error("RUN GPS ERROR:", err);
     alert("GPS Fehler beim Run Tracking: " + err.message);
 }
