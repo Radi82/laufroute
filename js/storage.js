@@ -13,6 +13,7 @@
  ************************************************************/
 
 import { on, emit } from "./eventBus.js";
+import { log, error } from "./logger.js";
 import { showToast } from "./toast.js";
 /************************************************************
  * 📦 STATE
