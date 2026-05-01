@@ -1,11 +1,8 @@
 /************************************************************
  * 🧾 LOGGER MODULE
- * Zentrale Steuerung für Console-Ausgaben
  ************************************************************/
 
-const DEBUG = false; 
-// true  = Dev Logs sichtbar
-// false = ruhige Production Console
+const DEBUG = window.location.hostname === "localhost";
 
 export function log(...args) {
     if (DEBUG) {
