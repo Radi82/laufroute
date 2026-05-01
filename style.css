@@ -35,9 +35,18 @@ body {
     margin: 0;
     padding: 0;
 
-    background: var(--bg);
-    color: var(--text);
+    background:
+        linear-gradient(rgba(143, 168, 120, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(143, 168, 120, 0.035) 1px, transparent 1px),
+        radial-gradient(circle at top, rgba(143, 168, 120, 0.08), transparent 35%),
+        var(--bg);
 
+    background-size:
+        32px 32px,
+        32px 32px,
+        100% 100%;
+
+    color: var(--text);
     font-family: "Segoe UI", Arial, sans-serif;
     font-size: 14px;
 }
@@ -70,6 +79,10 @@ h2 {
 .toolbar {
     margin: 10px;
     padding: 10px;
+
+    width: min(1400px, calc(100% - 28px));
+    margin-left: auto;
+    margin-right: auto;
 
     background: var(--panel);
     border: 1px solid var(--border);
@@ -172,12 +185,17 @@ select:focus {
  * 🗺️ MAP
  ************************************************************/
 #map {
-    width: calc(100% - 20px);
-    height: 72vh;
+    width: min(1400px, calc(100% - 28px));
+    height: 68vh;
 
-    margin: 10px;
+    margin: 14px auto 24px;
 
     border: 1px solid var(--map-border);
+    background: var(--bg-dark);
+
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.6),
+        0 12px 28px rgba(0, 0, 0, 0.35);
 
     filter: contrast(1.02) brightness(0.98) saturate(0.92);
 
@@ -226,6 +244,10 @@ select:focus {
 .routes-panel {
     margin: 10px;
     padding: 12px;
+
+    width: min(1400px, calc(100% - 28px));
+    margin-left: auto;
+    margin-right: auto;
 
     background: var(--panel);
     border: 1px solid var(--border);
@@ -364,6 +386,7 @@ select:focus {
 
         max-height: 34vh;
         overflow-y: auto;
+        
     }
 
     button {
@@ -414,11 +437,11 @@ select:focus {
     }
 
     #map {
-        width: calc(100% - 16px);
-        height: 58vh;
+    width: calc(100% - 16px);
+    height: 58vh;
 
-        margin: 8px;
-    }
+    margin: 8px auto 16px;
+}
 
     .routes-panel {
         margin: 8px;
@@ -463,6 +486,7 @@ select:focus {
     }
 
     #map {
-        height: 54vh;
-    }
+    height: 54vh;
+    margin: 8px auto 16px;
+}
 }
