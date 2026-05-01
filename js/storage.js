@@ -13,8 +13,9 @@
  ************************************************************/
 
 import { on, emit } from "./eventBus.js";
-import { log, error } from "./logger.js";
+import { log, error as logError } from "./logger.js";
 import { showToast } from "./toast.js";
+
 /************************************************************
  * 📦 STATE
  ************************************************************/
@@ -51,13 +52,13 @@ export async function loadRunHistory() {
         return runHistory;
     }
 
-    const { data, error } = await window.supabaseClient
+    const { data, error: loadError } = await window.supabaseClient
         .from("runs")
         .select("*")
         .order("created_at", { ascending: false });
 
-    if (error) {
-        error("LOAD HISTORY ERROR:", error);
+    if (loadError) {
+        logError("LOAD HISTORY ERROR:", loadError);
         emit("history:loaded", []);
         return [];
     }
@@ -82,7 +83,7 @@ async function saveRunToDB(runData) {
         return;
     }
 
-    const { error } = await window.supabaseClient
+    const { error: saveError } = await window.supabaseClient
         .from("runs")
         .insert([
             {
@@ -93,13 +94,14 @@ async function saveRunToDB(runData) {
             }
         ]);
 
-    if (error) {
-        error("SAVE RUN ERROR:", error);
+    if (saveError) {
+        logError("SAVE RUN ERROR:", saveError);
         showToast("Run konnte nicht gespeichert werden", "error");
         return;
     }
 
     emit("run:saved");
+    showToast("Run gespeichert");
 
     // Nach dem Speichern History neu laden
     await loadRunHistory();
@@ -114,18 +116,19 @@ async function deleteRun(runId) {
 
     if (!user || !runId) return;
 
-    const { error } = await window.supabaseClient
+    const { error: deleteError } = await window.supabaseClient
         .from("runs")
         .delete()
         .eq("id", runId)
         .eq("user_id", user.id);
 
-    if (error) {
-        error("DELETE RUN ERROR:", error);
+    if (deleteError) {
+        logError("DELETE RUN ERROR:", deleteError);
         showToast("Run konnte nicht gelöscht werden", "error");
         return;
     }
 
+    showToast("Run gelöscht");
     await loadRunHistory();
 }
 
@@ -148,7 +151,7 @@ export async function saveRouteToDB(routeData) {
         return;
     }
 
-    const { error } = await window.supabaseClient
+    const { error: saveError } = await window.supabaseClient
         .from("routes")
         .insert([
             {
@@ -159,12 +162,13 @@ export async function saveRouteToDB(routeData) {
             }
         ]);
 
-    if (error) {
-        error("SAVE ROUTE ERROR:", error);
+    if (saveError) {
+        logError("SAVE ROUTE ERROR:", saveError);
         showToast("Route konnte nicht gespeichert werden", "error");
         return;
     }
 
+    showToast("Route gespeichert");
     await loadRoutesFromDB();
 }
 
@@ -180,13 +184,13 @@ export async function loadRoutesFromDB() {
         return [];
     }
 
-    const { data, error } = await window.supabaseClient
+    const { data, error: loadError } = await window.supabaseClient
         .from("routes")
         .select("*")
         .order("created_at", { ascending: false });
 
-    if (error) {
-        error("LOAD ROUTES ERROR:", error);
+    if (loadError) {
+        logError("LOAD ROUTES ERROR:", loadError);
         emit("routes:loaded", []);
         return [];
     }
@@ -205,18 +209,19 @@ export async function deleteRouteFromDB(routeId) {
 
     if (!user || !routeId) return;
 
-    const { error } = await window.supabaseClient
+    const { error: deleteError } = await window.supabaseClient
         .from("routes")
         .delete()
         .eq("id", routeId)
         .eq("user_id", user.id);
 
-    if (error) {
-        error("DELETE ROUTE ERROR:", error);
+    if (deleteError) {
+        logError("DELETE ROUTE ERROR:", deleteError);
         showToast("Route konnte nicht gelöscht werden", "error");
         return;
     }
 
+    showToast("Route gelöscht");
     await loadRoutesFromDB();
 }
 
@@ -229,7 +234,7 @@ export async function renameRouteInDB(routeId, newName) {
 
     if (!user || !routeId || !newName) return;
 
-    const { error } = await window.supabaseClient
+    const { error: renameError } = await window.supabaseClient
         .from("routes")
         .update({
             name: newName
@@ -237,24 +242,36 @@ export async function renameRouteInDB(routeId, newName) {
         .eq("id", routeId)
         .eq("user_id", user.id);
 
-    if (error) {
-        error("RENAME ROUTE ERROR:", error);
+    if (renameError) {
+        logError("RENAME ROUTE ERROR:", renameError);
         showToast("Route konnte nicht umbenannt werden", "error");
         return;
     }
 
+    showToast("Route umbenannt");
     await loadRoutesFromDB();
 }
 
 /************************************************************
- * 👤 GET CURRENT USER
- * Holt den aktuell eingeloggten Supabase User
+ * 👤 GET USER
+ * Holt den aktuell eingeloggten User.
+ *
+ * Wichtig:
+ * - Kein Login ist KEIN echter Fehler
+ * - AuthSessionMissingError wird deshalb still behandelt
  ************************************************************/
 async function getUser() {
-    const { data, error } = await window.supabaseClient.auth.getUser();
+    const { data, error: userError } =
+        await window.supabaseClient.auth.getUser();
 
-    if (error) {
-        error("GET USER ERROR:", error);
+    if (userError) {
+        // Supabase meldet das, wenn niemand eingeloggt ist.
+        // Das ist für unsere App normal und kein Crash-Grund.
+        if (userError.name === "AuthSessionMissingError") {
+            return null;
+        }
+
+        logError("GET USER ERROR:", userError);
         return null;
     }
 
