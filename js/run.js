@@ -6,7 +6,7 @@
  * - Distanzberechnung
  * - Events an Map + Storage
  ************************************************************/
-
+import { showToast } from "./toast.js";
 import { on, emit } from "./eventBus.js";
 import { getDistanceKm } from "./utils.js";
 import { log, warn, error } from "./logger.js";
