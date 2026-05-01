@@ -5,7 +5,7 @@
 import { showToast } from "./toast.js";
 import { initMap } from "./map.js";
 import { initAuth, checkUser } from "./auth.js";
-import { initStorage, loadRunHistory } from "./storage.js";
+import { initStorage, loadRunHistory, loadRouteById } from "./storage.js";
 import { initRun } from "./run.js";
 import { initUI } from "./ui.js";
 import { log, error } from "./logger.js";
@@ -24,6 +24,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         await checkUser();
         await loadRunHistory();
+        const params = new URLSearchParams(window.location.search);
+const sharedRouteId = params.get("route");
+
+if (sharedRouteId) {
+    await loadRouteById(sharedRouteId);
+}
 
         log("✅ SYSTEM READY");
     } catch (err) {

@@ -201,6 +201,29 @@ export async function loadRoutesFromDB() {
 }
 
 /************************************************************
+ * 🔗 LOAD SINGLE ROUTE BY ID
+ * Lädt eine einzelne Route aus Supabase
+ ************************************************************/
+export async function loadRouteById(routeId) {
+    if (!routeId) return null;
+
+    const { data, error: loadError } = await window.supabaseClient
+        .from("routes")
+        .select("*")
+        .eq("id", routeId)
+        .single();
+
+    if (loadError) {
+        logError("LOAD ROUTE BY ID ERROR:", loadError);
+        showToast("Geteilte Route konnte nicht geladen werden", "error");
+        return null;
+    }
+
+    emit("route:loadSaved", data);
+    return data;
+}
+
+/************************************************************
  * 🗑️ DELETE ROUTE
  * Löscht eine gespeicherte Route
  ************************************************************/

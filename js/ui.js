@@ -38,6 +38,7 @@ function bindButtons() {
     bind("resetBtn", () => emit("route:reset"));
     bind("exportBtn", () => emit("route:export"));
     bind("saveRouteBtn", () => emit("route:save"));
+
     bind("locBtn", () => emit("map:locate"));
     bind("searchBtn", () => emit("map:search"));
 
@@ -56,6 +57,7 @@ function bindButtons() {
     bind("exportSelectedRouteBtn", exportSelectedRoute);
     bind("renameSelectedRouteBtn", renameSelectedRoute);
     bind("deleteSelectedRouteBtn", deleteSelectedRoute);
+    bind("shareSelectedRouteBtn", shareSelectedRoute);
 }
 
 function bind(id, handler) {
@@ -312,4 +314,24 @@ function renderHistory(runs) {
 
         container.appendChild(div);
     });
+}
+/************************************************************
+ * 🔗 SHARE SELECTED ROUTE
+ ************************************************************/
+async function shareSelectedRoute() {
+    const route = getSelectedRoute();
+
+    if (!route) {
+        showToast("Bitte zuerst eine Route auswählen", "error");
+        return;
+    }
+
+    const url = `${window.location.origin}${window.location.pathname}?route=${route.id}`;
+
+    try {
+        await navigator.clipboard.writeText(url);
+        showToast("Link kopiert");
+    } catch {
+        prompt("Link kopieren:", url);
+    }
 }
