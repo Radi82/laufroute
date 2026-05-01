@@ -369,99 +369,95 @@ select:focus {
 @media (max-width: 768px) {
 
     h1 {
-        margin: 10px 10px 4px;
-        font-size: 22px;
+        font-size: 20px;
+        margin: 10px;
     }
 
     h2 {
+        font-size: 11px;
         margin: 0 10px 8px;
-        font-size: 12px;
     }
 
     .toolbar {
         margin: 8px;
-        padding: 8px;
+        padding: 10px;
 
-        gap: 6px;
+        gap: 8px;
 
-        max-height: 34vh;
+        max-height: 32vh;
         overflow-y: auto;
-        
     }
 
+    /* 🔥 Buttons größer & klarer */
     button {
-        flex: 1 1 calc(50% - 8px);
-
-        min-height: 44px;
-        padding: 12px 10px;
-
-        font-size: 12px;
-    }
-
-    #runBtn {
         flex: 1 1 100%;
+        min-height: 48px;
 
-        font-size: 15px;
-        font-weight: 700;
-
-        border-width: 2px;
-        border-color: var(--primary);
+        font-size: 14px;
+        padding: 12px;
     }
 
-    #searchInput {
-        flex: 1 1 calc(70% - 8px);
+    /* 🔥 RUN Button extra groß */
+    #runBtn {
+        font-size: 16px;
+        font-weight: 700;
+        border-width: 2px;
+    }
 
-        min-width: 0;
-        min-height: 44px;
+    /* 🔎 Suche untereinander */
+    #searchInput {
+        flex: 1 1 100%;
+        min-height: 48px;
     }
 
     #searchBtn {
-        flex: 1 1 calc(30% - 8px);
+        flex: 1 1 100%;
     }
 
+    /* 🔥 Status größer */
     #distance,
     #runStatus,
     #userInfo {
         flex: 1 1 100%;
 
-        font-size: 13px;
-        padding: 4px;
-
-        border-left: none;
-        border-top: 1px solid var(--border);
+        font-size: 14px;
+        padding: 6px;
     }
 
+    /* 🔥 History kleiner, sonst frisst sie Platz */
     #historyList {
-        max-height: 130px;
-        font-size: 13px;
+        max-height: 100px;
+        font-size: 12px;
     }
 
+    /* 🔥 MAP mehr Fokus */
     #map {
-    width: calc(100% - 16px);
-    height: 58vh;
+        height: 62vh;
+        margin: 8px auto 16px;
+    }
 
-    margin: 8px auto 16px;
-}
-
+    /* 🔥 Routenpanel besser lesbar */
     .routes-panel {
         margin: 8px;
-        padding: 10px;
+        padding: 12px;
     }
 
     .routes-panel-actions button {
-        flex: 1 1 calc(50% - 8px);
+        flex: 1 1 100%;
     }
 
+    /* 🔥 Toast full width */
     #toastContainer {
         right: 10px;
-        bottom: 10px;
         left: 10px;
+        bottom: 10px;
     }
 
     .toast {
         width: 100%;
     }
 
+    /* HUD weg auf Mobile */
     #hud {
         display: none;
     }
