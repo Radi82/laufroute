@@ -9,7 +9,7 @@
  * - GPS & Suche
  * - Anzeigen von Run / History
  ************************************************************/
-
+import { showToast } from "./toast.js";
 import { on, emit } from "./eventBus.js";
 import { decodePolyline } from "./utils.js";
 import { saveRouteToDB } from "./storage.js";
@@ -322,6 +322,42 @@ function exportSavedRoute(route) {
     URL.revokeObjectURL(a.href);
 
     log("📤 GPX aus gespeicherter Route exportiert:", a.download);
+}
+/************************************************************
+ * 📥 IMPORT ROUTE
+ ************************************************************/
+function importRouteFile(file) {
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+
+            if (!Array.isArray(data)) {
+                throw new Error("Ungültiges JSON Format");
+            }
+
+            clearRoute();
+
+            data.forEach(point => {
+                if (
+                    Array.isArray(point) &&
+                    typeof point[0] === "number" &&
+                    typeof point[1] === "number"
+                ) {
+                    addRoutePoint(point);
+                }
+            });
+
+        } catch (err) {
+            error("IMPORT ERROR:", err);
+            showToast("Import Fehler", "error");
+        }
+    };
+
+    reader.readAsText(file);
 }
 /************************************************************
  * 📍 GPS
