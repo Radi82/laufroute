@@ -1,5 +1,5 @@
 /************************************************************
- * 🎛️ UI MODULE
+ * UI MODULE
  * Zuständig für:
  * - Button Events
  * - History Rendering
@@ -9,18 +9,12 @@
 import { showToast } from "./toast.js";
 import { on, emit } from "./eventBus.js";
 import { formatDuration } from "./utils.js";
-import { log, warn, error } from "./logger.js";
+import { log, warn } from "./logger.js";
 
-/************************************************************
- * 📦 UI STATE
- ************************************************************/
 let cachedRoutes = [];
 
-/************************************************************
- * 🚀 INIT UI
- ************************************************************/
 export function initUI() {
-    log("🎛️ UI MODULE READY");
+    log("UI MODULE READY");
 
     bindButtons();
     bindFileInput();
@@ -28,9 +22,6 @@ export function initUI() {
     bindEventListeners();
 }
 
-/************************************************************
- * 🔘 BUTTONS
- ************************************************************/
 function bindButtons() {
     bind("runBtn", () => emit("run:toggle"));
 
@@ -49,9 +40,6 @@ function bindButtons() {
         document.getElementById("fileInput")?.click();
     });
 
-    /********************
-     * 📍 ROUTEN PANEL
-     ********************/
     bind("routesPanelBtn", toggleRoutesPanel);
     bind("loadSelectedRouteBtn", loadSelectedRoute);
     bind("exportSelectedRouteBtn", exportSelectedRoute);
@@ -71,9 +59,6 @@ function bind(id, handler) {
     el.addEventListener("click", handler);
 }
 
-/************************************************************
- * 📂 FILE IMPORT
- ************************************************************/
 function bindFileInput() {
     const input = document.getElementById("fileInput");
 
@@ -82,14 +67,10 @@ function bindFileInput() {
     input.addEventListener("change", (e) => {
         const file = e.target.files?.[0];
         emit("map:importFile", file);
-
         input.value = "";
     });
 }
 
-/************************************************************
- * 🔎 ENTER TO SEARCH
- ************************************************************/
 function bindSearchEnter() {
     const input = document.getElementById("searchInput");
 
@@ -102,9 +83,6 @@ function bindSearchEnter() {
     });
 }
 
-/************************************************************
- * 📡 EVENT LISTENERS
- ************************************************************/
 function bindEventListeners() {
     on("run:state", updateRunState);
     on("run:saved", showRunSaved);
@@ -112,9 +90,6 @@ function bindEventListeners() {
     on("routes:loaded", renderRoutesDropdown);
 }
 
-/************************************************************
- * 🏃 RUN STATUS
- ************************************************************/
 function updateRunState(payload) {
     const btn = document.getElementById("runBtn");
     const status = document.getElementById("runStatus");
@@ -122,12 +97,12 @@ function updateRunState(payload) {
     if (!btn || !status) return;
 
     if (payload.state === "running") {
-        btn.innerText = "⏹ STOP RUN";
+        btn.innerText = "STOP RUN";
         status.innerText = "RUNNING";
     }
 
     if (payload.state === "stopped") {
-        btn.innerText = "▶ START RUN";
+        btn.innerText = "START RUN";
         status.innerText = "STOPPED";
     }
 }
@@ -143,16 +118,12 @@ function showRunSaved() {
     }, 1500);
 }
 
-/************************************************************
- * 📍 ROUTEN PANEL
- ************************************************************/
 function toggleRoutesPanel() {
     const panel = document.getElementById("routesPanel");
     if (!panel) return;
 
     panel.classList.toggle("hidden");
 
-    // Beim Öffnen frisch laden
     if (!panel.classList.contains("hidden")) {
         emit("routes:load");
     }
@@ -166,30 +137,29 @@ function renderRoutesDropdown(routes) {
 
     if (!select) return;
 
-    select.innerHTML = `<option value="">Route auswählen...</option>`;
+    select.replaceChildren(createRouteOption("", "Route auswählen..."));
 
     if (activeInfo) {
         activeInfo.innerText = "Keine Route ausgewählt";
     }
 
     if (!cachedRoutes.length) {
-        const option = document.createElement("option");
-        option.value = "";
-        option.innerText = "Keine Routen gespeichert";
-        select.appendChild(option);
+        select.appendChild(createRouteOption("", "Keine Routen gespeichert"));
         return;
     }
 
     cachedRoutes.forEach(route => {
-        const option = document.createElement("option");
-        option.value = route.id;
-        option.innerText = route.name || "Unbenannte Route";
-        select.appendChild(option);
+        select.appendChild(createRouteOption(route.id, route.name || "Unbenannte Route"));
     });
 
-    select.onchange = () => {
-        updateActiveRouteInfo();
-    };
+    select.onchange = updateActiveRouteInfo;
+}
+
+function createRouteOption(value, label) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.innerText = label;
+    return option;
 }
 
 function updateActiveRouteInfo() {
@@ -198,16 +168,29 @@ function updateActiveRouteInfo() {
 
     if (!activeInfo) return;
 
+    activeInfo.replaceChildren();
+
     if (!route) {
         activeInfo.innerText = "Keine Route ausgewählt";
         return;
     }
 
-    activeInfo.innerHTML = `
-        📍 Aktive Auswahl: <strong>${route.name || "Unbenannte Route"}</strong><br>
-        🧭 Punkte: ${route.points?.length || 0}<br>
-        📅 ${new Date(route.created_at).toLocaleString()}
-    `;
+    const nameLine = document.createElement("div");
+    const nameStrong = document.createElement("strong");
+    nameStrong.innerText = route.name || "Unbenannte Route";
+    nameLine.append("Aktive Auswahl: ", nameStrong);
+
+    const pointsLine = document.createElement("div");
+    pointsLine.innerText = `Punkte: ${route.points?.length || 0}`;
+
+    const distanceLine = document.createElement("div");
+    const distance = Number(route.distance) || 0;
+    distanceLine.innerText = `Distanz: ${distance.toFixed(2)} km`;
+
+    const dateLine = document.createElement("div");
+    dateLine.innerText = new Date(route.created_at).toLocaleString();
+
+    activeInfo.append(nameLine, pointsLine, distanceLine, dateLine);
 }
 
 function getSelectedRoute() {
@@ -270,9 +253,6 @@ function deleteSelectedRoute() {
     }
 }
 
-/************************************************************
- * 📜 RUN HISTORY UI
- ************************************************************/
 function renderHistory(runs) {
     const container = document.getElementById("historyList");
 
@@ -315,9 +295,7 @@ function renderHistory(runs) {
         container.appendChild(div);
     });
 }
-/************************************************************
- * 🔗 SHARE SELECTED ROUTE
- ************************************************************/
+
 async function shareSelectedRoute() {
     const route = getSelectedRoute();
 
