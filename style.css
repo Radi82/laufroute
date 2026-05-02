@@ -329,6 +329,23 @@ select:focus {
         overflow-wrap: anywhere;
     }
 
+    #loginBtn {
+        order: -30;
+        grid-column: span 2;
+        border-color: var(--primary);
+        color: var(--primary-bright);
+    }
+
+    #logoutBtn {
+        order: -29;
+        grid-column: span 2;
+    }
+
+    #userInfo {
+        order: -28;
+        grid-column: 1 / -1;
+    }
+
     .toolbar h3 {
         margin: 4px 0 0;
         font-size: 12px;
@@ -394,6 +411,11 @@ select:focus {
     #runStatus,
     #userInfo {
         grid-column: 1 / -1;
+    }
+
+    #loginBtn,
+    #logoutBtn {
+        grid-column: span 1;
     }
 
     #map {
