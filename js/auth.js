@@ -1,5 +1,5 @@
 /************************************************************
- * 🔐 AUTH MODULE
+ * AUTH MODULE
  *
  * Zuständig für:
  * - Login
@@ -12,37 +12,27 @@
 import { on, emit } from "./eventBus.js";
 import { error as logError, log } from "./logger.js";
 import { showToast } from "./toast.js";
+import { getAuthRedirectUrl } from "./platform.js";
 
-/************************************************************
- * 🚀 INIT AUTH
- * Registriert Login/Logout Events und Supabase Auth Listener
- ************************************************************/
 export function initAuth() {
-    log("🔐 AUTH MODULE READY");
+    log("AUTH MODULE READY");
 
-    // UI Events
     on("auth:login", login);
     on("auth:logout", logout);
 
-    // Supabase Session Listener
     window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
         const user = session?.user || null;
 
         updateUserInfo(user);
         emit("auth:changed", user);
 
-        // Nach erfolgreichem Login Daten laden
         if (user) {
-            emit("storage:load"); // Runs laden
-            emit("routes:load");  // Routen laden
+            emit("storage:load");
+            emit("routes:load");
         }
     });
 }
 
-/************************************************************
- * 👤 CHECK USER
- * Prüft beim App-Start, ob bereits ein User eingeloggt ist
- ************************************************************/
 export async function checkUser() {
     const { data, error: authError } =
         await window.supabaseClient.auth.getUser();
@@ -58,7 +48,6 @@ export async function checkUser() {
     updateUserInfo(user);
     emit("auth:changed", user);
 
-    // Wenn Session existiert, direkt Daten laden
     if (user) {
         emit("storage:load");
         emit("routes:load");
@@ -67,10 +56,6 @@ export async function checkUser() {
     return user;
 }
 
-/************************************************************
- * 👤 GET CURRENT USER
- * Kann von anderen Modulen genutzt werden
- ************************************************************/
 export async function getCurrentUser() {
     const { data, error: userError } =
         await window.supabaseClient.auth.getUser();
@@ -83,14 +68,13 @@ export async function getCurrentUser() {
     return data.user || null;
 }
 
-/************************************************************
- * 🔐 LOGIN
- * Startet Google OAuth Login
- ************************************************************/
 async function login() {
     const { error: loginError } =
         await window.supabaseClient.auth.signInWithOAuth({
-            provider: "google"
+            provider: "google",
+            options: {
+                redirectTo: getAuthRedirectUrl()
+            }
         });
 
     if (loginError) {
@@ -99,10 +83,6 @@ async function login() {
     }
 }
 
-/************************************************************
- * 🚪 LOGOUT
- * Meldet User ab und leert UI-Listen
- ************************************************************/
 async function logout() {
     const { error: logoutError } =
         await window.supabaseClient.auth.signOut();
@@ -114,18 +94,12 @@ async function logout() {
     }
 
     updateUserInfo(null);
-
-    // UI nach Logout leeren
     emit("history:loaded", []);
     emit("routes:loaded", []);
 
     showToast("Logout erfolgreich");
 }
 
-/************************************************************
- * 🧾 USER INFO UI
- * Zeigt eingeloggten User oben in der Toolbar
- ************************************************************/
 function updateUserInfo(user) {
     const el = document.getElementById("userInfo");
 
