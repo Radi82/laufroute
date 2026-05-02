@@ -6,6 +6,7 @@ const outDir = path.join(root, "www");
 
 const files = [
   "index.html",
+  "privacy.html",
   "style.css",
   "supabase.js",
   "_config.yml"
