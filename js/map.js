@@ -1,11 +1,11 @@
 /************************************************************
- * 🗺️ MAP MODULE
+ * MAP MODULE
  *
  * Zuständig für:
  * - Karte initialisieren
  * - Routenpunkte setzen (Klick)
  * - Routing (API)
- * - GPX Export
+ * - JSON / GPX Export
  * - GPS & Suche
  * - Anzeigen von Run / History
  ************************************************************/
@@ -14,29 +14,26 @@ import { on, emit } from "./eventBus.js";
 import { decodePolyline, getDistanceKm } from "./utils.js";
 import { saveRouteToDB } from "./storage.js";
 import { log, error } from "./logger.js";
+
 export let map;
 
-/************************************************************
- * 📦 STATE
- ************************************************************/
 const apiUrl = "/api/route";
 
-let routePoints = [];        // geplante Route Punkte
-let routeMarkers = [];       // Marker für Punkte
-let plannedRouteLine = null; // geplante Route Linie
+let routePoints = [];          // gesetzte Marker / Stützpunkte
+let routedRoutePoints = [];    // echte ORS-Geometrie entlang der Wege
+let routeDistance = 0;
+let routeMarkers = [];
+let plannedRouteLine = null;
 
-let runLine = null;          // Live Run Linie
-let historyLine = null;      // History Linie
-let locationMarker = null;   // GPS Marker
+let runLine = null;
+let historyLine = null;
+let locationMarker = null;
 
 let baseLayers = {};
 let currentBaseLayer = null;
 
-/************************************************************
- * 🚀 INIT
- ************************************************************/
 export function initMap() {
-    log("🗺️ MAP MODULE READY");
+    log("MAP MODULE READY");
 
     if (!window.L) throw new Error("Leaflet nicht geladen");
 
@@ -46,14 +43,10 @@ export function initMap() {
     setupMapEvents();
     setupEventListeners();
 
-    log("🗺️ MAP READY OK");
+    log("MAP READY OK");
 }
 
-/************************************************************
- * 🧱 BASE LAYERS (Map Styles)
- ************************************************************/
 function setupBaseLayers() {
-
     const light = L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         { maxZoom: 19 }
@@ -70,9 +63,9 @@ function setupBaseLayers() {
     );
 
     baseLayers = {
-        "☀️ Normal": light,
-        "🌙 Dark": dark,
-        "🛰️ Satellite": satellite
+        "Normal": light,
+        "Dark": dark,
+        "Satellite": satellite
     };
 
     currentBaseLayer = light;
@@ -81,19 +74,97 @@ function setupBaseLayers() {
     L.control.layers(baseLayers).addTo(map);
 }
 
-/************************************************************
- * 🖱️ MAP CLICK → Route bauen
- ************************************************************/
 function setupMapEvents() {
     map.on("click", (e) => {
         addRoutePoint([e.latlng.lat, e.latlng.lng]);
     });
 }
 
+function setupEventListeners() {
+    on("route:undo", undoRoutePoint);
+    on("route:reset", clearRoute);
+    on("route:export", exportRoute);
+    on("route:save", saveCurrentRoute);
+    on("route:loadSaved", loadSavedRoute);
+    on("route:exportSaved", exportSavedRoute);
+
+    on("map:locate", goToMyLocation);
+    on("map:search", searchLocation);
+    on("map:importFile", importRouteFile);
+
+    on("run:update", drawLiveRun);
+    on("history:select", drawHistoryRun);
+}
+
 function addRoutePoint(point) {
-
     routePoints.push(point);
+    addMarkerOnly(point);
 
+    if (routePoints.length === 1) {
+        routedRoutePoints = [point];
+        routeDistance = 0;
+        setDistanceText("Distanz: 0.00 km");
+        return;
+    }
+
+    drawPlannedRoute({ fitBounds: false });
+}
+
+async function drawPlannedRoute(options = {}) {
+    const { fitBounds = false } = options;
+
+    try {
+        const route = await fetchRoute(routePoints);
+        const coords = decodePolyline(route.geometry);
+
+        routedRoutePoints = coords;
+        routeDistance = route.summary?.distance
+            ? route.summary.distance / 1000
+            : calculateRouteDistance(coords);
+
+        drawRouteLine(coords, "#00ff66");
+        setDistanceText(`Distanz: ${routeDistance.toFixed(2)} km`);
+
+        if (fitBounds && plannedRouteLine) {
+            fitMapToLine(plannedRouteLine);
+        }
+    } catch (err) {
+        error("ROUTING ERROR:", err);
+        showToast("Routing Fehler", "error");
+    }
+}
+
+async function fetchRoute(points) {
+    const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            coordinates: points.map(p => [p[1], p[0]])
+        })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.routes?.length) {
+        throw new Error(data.error || "Keine Route erhalten");
+    }
+
+    return data.routes[0];
+}
+
+function drawRouteLine(points, color) {
+    if (plannedRouteLine) {
+        map.removeLayer(plannedRouteLine);
+    }
+
+    plannedRouteLine = L.polyline(points, {
+        color,
+        weight: 5,
+        opacity: 0.9
+    }).addTo(map);
+}
+
+function addMarkerOnly(point) {
     const marker = L.circleMarker(point, {
         radius: 6,
         color: "#00ff66",
@@ -102,116 +173,65 @@ function addRoutePoint(point) {
     }).addTo(map);
 
     routeMarkers.push(marker);
-
-    if (routePoints.length > 1) {
-        drawPlannedRoute();
-    }
 }
 
-/************************************************************
- * 📡 EVENT SYSTEM
- ************************************************************/
-function setupEventListeners() {
-
-    // Route Actions
-    on("route:undo", undoRoutePoint);
-    on("route:reset", clearRoute);
-    on("route:export", exportRoute);
-    on("route:save", saveCurrentRoute);
-    on("route:loadSaved", loadSavedRoute);
-    on("route:exportSaved", exportSavedRoute);
-
-    // Map
-    on("map:locate", goToMyLocation);
-    on("map:search", searchLocation);
-    on("map:importFile", importRouteFile);
-
-    // Run / History Anzeige
-    on("run:update", drawLiveRun);
-    on("history:select", drawHistoryRun);
-}
-
-/************************************************************
- * 🧭 ROUTING (API)
- ************************************************************/
-async function drawPlannedRoute() {
-
-    try {
-        const res = await fetch(apiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                coordinates: routePoints.map(p => [p[1], p[0]])
-            })
-        });
-
-        const data = await res.json();
-
-        if (!data.routes?.length) {
-            throw new Error("Keine Route erhalten");
-        }
-
-        const route = data.routes[0];
-        const coords = decodePolyline(route.geometry);
-
-        if (plannedRouteLine) {
-            map.removeLayer(plannedRouteLine);
-        }
-
-        plannedRouteLine = L.polyline(coords, {
-            color: "#00ff66",
-            weight: 4
-        }).addTo(map);
-
-        map.fitBounds(plannedRouteLine.getBounds(), {
-            padding: [20, 20]
-        });
-
-    } catch (err) {
-        error("ROUTING ERROR:", err);
-    }
-}
-
-/************************************************************
- * ↩️ ROUTE ACTIONS
- ************************************************************/
 function undoRoutePoint() {
-
     if (!routePoints.length) return;
 
     routePoints.pop();
 
-    const m = routeMarkers.pop();
-    if (m) map.removeLayer(m);
+    const marker = routeMarkers.pop();
+    if (marker) map.removeLayer(marker);
 
     if (plannedRouteLine) {
         map.removeLayer(plannedRouteLine);
         plannedRouteLine = null;
     }
 
-    if (routePoints.length > 1) drawPlannedRoute();
+    routedRoutePoints = [];
+    routeDistance = 0;
+
+    if (routePoints.length > 1) {
+        drawPlannedRoute({ fitBounds: false });
+    } else if (routePoints.length === 1) {
+        routedRoutePoints = [...routePoints];
+        setDistanceText("Distanz: 0.00 km");
+    } else {
+        setDistanceText("Distanz: 0 km");
+    }
 }
 
 function clearRoute() {
-
     routePoints = [];
+    routedRoutePoints = [];
+    routeDistance = 0;
 
-    routeMarkers.forEach(m => map.removeLayer(m));
+    routeMarkers.forEach(marker => map.removeLayer(marker));
     routeMarkers = [];
 
     if (plannedRouteLine) {
         map.removeLayer(plannedRouteLine);
         plannedRouteLine = null;
     }
+
+    setDistanceText("Distanz: 0 km");
 }
 
-/************************************************************
- * 💾 ROUTE SPEICHERN
- ************************************************************/
 async function saveCurrentRoute() {
+    if (routePoints.length < 2) {
+        showToast("Setze mindestens zwei Marker", "error");
+        return;
+    }
 
-    if (!routePoints.length) {
-        showToast("Keine Route vorhanden", "error");
+    if (!routedRoutePoints.length || routeDistance === 0) {
+        await drawPlannedRoute({ fitBounds: false });
+    }
+
+    const points = getExportPoints();
+    const distance = routeDistance || calculateRouteDistance(points);
+
+    if (points.length < 2 || distance === 0) {
+        showToast("Route ist noch nicht berechnet", "error");
         return;
     }
 
@@ -220,22 +240,34 @@ async function saveCurrentRoute() {
 
     await saveRouteToDB({
         name,
-        points: routePoints,
-        distance: 0
+        points,
+        distance
     });
 
-    emit("routes:load"); // UI neu laden
+    emit("routes:load");
 }
 
-/************************************************************
- * 📍 ROUTE LADEN
- ************************************************************/
 function loadSavedRoute(route) {
-
     if (!route?.points?.length) return;
 
     clearRoute();
+    clearRunAndHistoryLines();
 
+    const points = normalizePoints(route.points);
+    routedRoutePoints = points;
+    routePoints = [];
+    routeDistance = Number(route.distance) > 0
+        ? Number(route.distance)
+        : calculateRouteDistance(points);
+
+    drawRouteLine(points, "#00e5ff");
+    setDistanceText(`Distanz: ${routeDistance.toFixed(2)} km`);
+
+    if (plannedRouteLine) fitMapToLine(plannedRouteLine);
+    log("Active Route geladen:", route.name);
+}
+
+function clearRunAndHistoryLines() {
     if (runLine) {
         map.removeLayer(runLine);
         runLine = null;
@@ -245,73 +277,36 @@ function loadSavedRoute(route) {
         map.removeLayer(historyLine);
         historyLine = null;
     }
-
-    plannedRouteLine = L.polyline(route.points, {
-        color: "#00e5ff",
-        weight: 5,
-        opacity: 0.9
-    }).addTo(map);
-
-    const distance = route.distance && route.distance > 0
-        ? route.distance
-        : calculateRouteDistance(route.points);
-
-    setDistanceText(`Distanz: ${distance.toFixed(2)} km`);
-
-    map.fitBounds(plannedRouteLine.getBounds(), {
-        padding: [20, 20]
-    });
-
-    log("📍 Active Route geladen:", route.name);
 }
 
-/************************************************************
- * 📏 ROUTE DISTANZ BERECHNEN
- ************************************************************/
-function calculateRouteDistance(points) {
-    let distance = 0;
-
-    for (let i = 1; i < points.length; i++) {
-        distance += getDistanceKm(points[i - 1], points[i]);
-    }
-
-    return distance;
-}
-
-
-/************************************************************
- * 📤 GPX EXPORT
- ************************************************************/
 function exportRoute() {
+    const points = getExportPoints();
 
-    if (!routePoints.length) {
+    if (points.length < 2) {
         showToast("Keine Route vorhanden", "error");
         return;
     }
 
-    const name = prompt("GPX Name:", "laufroute");
+    const format = prompt("Export-Format: json oder gpx", "json");
+    if (!format) return;
+
+    const name = prompt("Dateiname:", "laufroute");
     if (!name) return;
 
-    const gpx = generateGPX(routePoints, name);
+    if (format.trim().toLowerCase() === "gpx") {
+        downloadText(`${safeFileName(name)}.gpx`, generateGPX(points, name), "application/gpx+xml");
+        return;
+    }
 
-    const blob = new Blob([gpx], {
-        type: "application/gpx+xml"
+    downloadJSON(name, {
+        name,
+        distance: routeDistance || calculateRouteDistance(points),
+        points,
+        control_points: routePoints,
+        exported_at: new Date().toISOString()
     });
-
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    const safeName = name
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "_")
-    .replace(/[^a-z0-9_-]/g, "");
-
-a.download = `${safeName || "laufroute"}.gpx`;
-    a.click();
 }
-/************************************************************
- * 📤 GPX EXPORT AUS GESPEICHERTER ROUTE
- ************************************************************/
+
 function exportSavedRoute(route) {
     if (!route?.points?.length) {
         showToast("Route leer", "error");
@@ -319,31 +314,25 @@ function exportSavedRoute(route) {
     }
 
     const routeName = route.name || "laufroute";
+    const format = prompt("Export-Format: json oder gpx", "gpx");
+    if (!format) return;
 
-    const safeName = routeName
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "_")
-        .replace(/[^a-z0-9_-]/g, "");
+    const points = normalizePoints(route.points);
 
-    const gpx = generateGPX(route.points, routeName);
+    if (format.trim().toLowerCase() === "json") {
+        downloadJSON(routeName, {
+            name: routeName,
+            distance: Number(route.distance) || calculateRouteDistance(points),
+            points,
+            exported_at: new Date().toISOString()
+        });
+        return;
+    }
 
-    const blob = new Blob([gpx], {
-        type: "application/gpx+xml"
-    });
-
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${safeName || "laufroute"}.gpx`;
-    a.click();
-
-    URL.revokeObjectURL(a.href);
-
-    log("📤 GPX aus gespeicherter Route exportiert:", a.download);
+    downloadText(`${safeFileName(routeName)}.gpx`, generateGPX(points, routeName), "application/gpx+xml");
+    log("Route exportiert:", routeName);
 }
-/************************************************************
- * 📥 IMPORT ROUTE
- ************************************************************/
+
 function importRouteFile(file) {
     if (!file) return;
 
@@ -351,24 +340,26 @@ function importRouteFile(file) {
 
     reader.onload = (e) => {
         try {
-            const data = JSON.parse(e.target.result);
+            const imported = JSON.parse(e.target.result);
+            const points = Array.isArray(imported) ? imported : imported.points;
+            const controlPoints = Array.isArray(imported.control_points) ? imported.control_points : [];
+            const validPoints = normalizePoints(points);
 
-            if (!Array.isArray(data)) {
+            if (validPoints.length < 2) {
                 throw new Error("Ungültiges JSON Format");
             }
 
             clearRoute();
 
-            data.forEach(point => {
-                if (
-                    Array.isArray(point) &&
-                    typeof point[0] === "number" &&
-                    typeof point[1] === "number"
-                ) {
-                    addRoutePoint(point);
-                }
-            });
+            routePoints = controlPoints.length ? normalizePoints(controlPoints) : [];
+            routePoints.forEach(point => addMarkerOnly(point));
 
+            routedRoutePoints = validPoints;
+            routeDistance = Number(imported.distance) || calculateRouteDistance(validPoints);
+
+            drawRouteLine(validPoints, "#00ff66");
+            setDistanceText(`Distanz: ${routeDistance.toFixed(2)} km`);
+            if (plannedRouteLine) fitMapToLine(plannedRouteLine);
         } catch (err) {
             error("IMPORT ERROR:", err);
             showToast("Import Fehler", "error");
@@ -377,11 +368,8 @@ function importRouteFile(file) {
 
     reader.readAsText(file);
 }
-/************************************************************
- * 📍 GPS
- ************************************************************/
-function goToMyLocation() {
 
+function goToMyLocation() {
     if (!navigator.geolocation) {
         showToast("Kein GPS verfügbar", "error");
         return;
@@ -405,26 +393,19 @@ function goToMyLocation() {
                 fillOpacity: 0.8
             })
                 .addTo(map)
-                .bindPopup("📍 Du bist hier")
+                .bindPopup("Du bist hier")
                 .openPopup();
 
             showToast("Standort gefunden");
         },
-
         (err) => {
             error("GPS ERROR:", err);
 
-            if (err.code === 1) {
-                showToast("Standort-Zugriff blockiert", "error");
-            } else if (err.code === 2) {
-                showToast("Standort nicht verfügbar", "error");
-            } else if (err.code === 3) {
-                showToast("GPS Timeout", "error");
-            } else {
-                showToast("GPS Fehler", "error");
-            }
+            if (err.code === 1) showToast("Standort-Zugriff blockiert", "error");
+            else if (err.code === 2) showToast("Standort nicht verfügbar", "error");
+            else if (err.code === 3) showToast("GPS Timeout", "error");
+            else showToast("GPS Fehler", "error");
         },
-
         {
             enableHighAccuracy: false,
             timeout: 20000,
@@ -432,11 +413,8 @@ function goToMyLocation() {
         }
     );
 }
-/************************************************************
- * 🔎 SEARCH
- ************************************************************/
-async function searchLocation() {
 
+async function searchLocation() {
     const q = document.getElementById("searchInput").value;
     if (!q) return;
 
@@ -457,11 +435,7 @@ async function searchLocation() {
         .openPopup();
 }
 
-/************************************************************
- * 🏃 RUN / HISTORY
- ************************************************************/
 function drawLiveRun(data) {
-
     if (runLine) map.removeLayer(runLine);
 
     runLine = L.polyline(data.points, {
@@ -470,7 +444,6 @@ function drawLiveRun(data) {
 }
 
 function drawHistoryRun(run) {
-
     if (!run?.points?.length) return;
 
     if (historyLine) map.removeLayer(historyLine);
@@ -478,20 +451,87 @@ function drawHistoryRun(run) {
     historyLine = L.polyline(run.points, {
         color: "#ffaa00"
     }).addTo(map);
+
+    fitMapToLine(historyLine);
 }
 
-/************************************************************
- * 🧾 GPX HELPER
- ************************************************************/
-function generateGPX(points, name) {
+function getExportPoints() {
+    return routedRoutePoints.length ? routedRoutePoints : routePoints;
+}
 
+function normalizePoints(points) {
+    if (!Array.isArray(points)) return [];
+
+    return points.filter(point =>
+        Array.isArray(point) &&
+        Number.isFinite(Number(point[0])) &&
+        Number.isFinite(Number(point[1]))
+    ).map(point => [Number(point[0]), Number(point[1])]);
+}
+
+function calculateRouteDistance(points) {
+    let distance = 0;
+
+    for (let i = 1; i < points.length; i++) {
+        distance += getDistanceKm(points[i - 1], points[i]);
+    }
+
+    return distance;
+}
+
+function fitMapToLine(line) {
+    map.fitBounds(line.getBounds(), {
+        padding: [20, 20]
+    });
+}
+
+function downloadJSON(name, data) {
+    downloadText(
+        `${safeFileName(name)}.json`,
+        JSON.stringify(data, null, 2),
+        "application/json"
+    );
+}
+
+function downloadText(fileName, content, type) {
+    const blob = new Blob([content], { type });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function safeFileName(value) {
+    return String(value)
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/[^a-z0-9_-]/g, "") || "laufroute";
+}
+
+function generateGPX(points, name) {
     return `<?xml version="1.0"?>
-<gpx>
+<gpx version="1.1" creator="Laufroute App" xmlns="http://www.topografix.com/GPX/1/1">
 <trk>
-<name>${name}</name>
+<name>${escapeXML(name)}</name>
 <trkseg>
-${points.map(p => `<trkpt lat="${p[0]}" lon="${p[1]}"></trkpt>`).join("")}
+${points.map(p => `<trkpt lat="${p[0]}" lon="${p[1]}"></trkpt>`).join("\n")}
 </trkseg>
 </trk>
 </gpx>`;
+}
+
+function escapeXML(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+}
+
+function setDistanceText(text) {
+    const el = document.getElementById("distance");
+    if (el) el.innerText = text;
 }
