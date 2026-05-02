@@ -20,6 +20,8 @@ npm run cap:open:android
 
 `npm run build` kopiert die statischen Web-Dateien nach `www/`. Capacitor nutzt `www/` als Web-Asset-Ordner.
 
+Capacitor empfiehlt für bestehende Web-Apps genau diesen Ablauf: Web-Build erzeugen, Android-Plattform hinzufügen, danach syncen.
+
 ## Nach Web-Code-Änderungen
 
 ```bash
@@ -54,7 +56,23 @@ com.radi82.laufroute://auth/callback
 
 Diesen Redirect musst du in Supabase unter Auth URL Configuration erlauben.
 
-Zusätzlich muss nach `npm run cap:add:android` im Android-Projekt ein Deep-Link Intent Filter für diese URL ergänzt werden. Das kommt im nächsten Schritt, sobald der `android/`-Ordner generiert ist.
+Nach `npm run cap:add:android` muss im generierten Android-Projekt ein Deep-Link Intent Filter in `android/app/src/main/AndroidManifest.xml` ergänzt werden. Der gehört in die Main Activity:
+
+```xml
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+
+    <data
+        android:scheme="com.radi82.laufroute"
+        android:host="auth"
+        android:path="/callback" />
+</intent-filter>
+```
+
+Die Web-App hat den Callback-Code bereits in `js/app.js`. Sobald Android diesen Link an die App weiterleitet, wird der Supabase OAuth Code gegen eine Session getauscht.
 
 ## Wichtige Dateien
 
@@ -62,6 +80,7 @@ Zusätzlich muss nach `npm run cap:add:android` im Android-Projekt ein Deep-Link
 - `capacitor.config.json` - Capacitor App ID, Name und `webDir`
 - `scripts/prepare-capacitor-web.cjs` - kopiert Web-Dateien nach `www/`
 - `js/platform.js` - erkennt Web vs. Android und setzt API/Auth URLs
+- `js/app.js` - verarbeitet Android Auth Callback URLs
 
 ## Nächster nativer Schritt
 
