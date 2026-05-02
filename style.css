@@ -1,125 +1,87 @@
 /************************************************************
- * 🎨 GLOBAL DESIGN
+ * GLOBAL DESIGN
  * Tactical / Military UI
  ************************************************************/
 :root {
     --bg: #0b0f0b;
     --bg-dark: #070a07;
-
     --panel: #121812;
     --panel-soft: #182018;
-
     --border: #2f3f2f;
     --border-strong: #4d674d;
-
     --primary: #8fa878;
     --primary-bright: #b8d8a0;
-
     --text: #d8e0d0;
     --text-dim: #8a9784;
-
     --danger: #c96b5a;
     --warning: #c9a85a;
-
     --map-border: rgba(143, 168, 120, 0.45);
 }
 
-/************************************************************
- * 🧱 RESET / BASE
- ************************************************************/
 * {
     box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
 }
 
 body {
     margin: 0;
     padding: 0;
-
     background:
         linear-gradient(rgba(143, 168, 120, 0.035) 1px, transparent 1px),
         linear-gradient(90deg, rgba(143, 168, 120, 0.035) 1px, transparent 1px),
         radial-gradient(circle at top, rgba(143, 168, 120, 0.08), transparent 35%),
         var(--bg);
-
-    background-size:
-        32px 32px,
-        32px 32px,
-        100% 100%;
-
+    background-size: 32px 32px, 32px 32px, 100% 100%;
     color: var(--text);
     font-family: "Segoe UI", Arial, sans-serif;
     font-size: 14px;
 }
 
-/************************************************************
- * 🧾 HEADINGS
- ************************************************************/
 h1 {
     margin: 14px 14px 4px;
-
     color: var(--primary-bright);
     font-size: 26px;
     letter-spacing: 1px;
     font-weight: 700;
-
-    text-shadow: none;
 }
 
 h2 {
     margin: 0 14px 10px;
-
     color: var(--text-dim);
     font-size: 13px;
     font-weight: normal;
 }
 
-/************************************************************
- * 🧰 TOOLBAR
- ************************************************************/
 .toolbar {
-    margin: 10px;
-    padding: 10px;
-
     width: min(1400px, calc(100% - 28px));
-    margin-left: auto;
-    margin-right: auto;
-
+    margin: 10px auto;
+    padding: 10px;
     background: var(--panel);
     border: 1px solid var(--border);
-    box-shadow: none;
     backdrop-filter: blur(4px);
-
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     align-items: center;
 }
 
-/************************************************************
- * 🔘 BUTTONS
- ************************************************************/
 button {
     background: var(--bg-dark);
     color: var(--text);
-
     border: 1px solid var(--border);
     border-radius: 2px;
-
     padding: 9px 14px;
-
     font-size: 13px;
     font-family: "Segoe UI", Arial, sans-serif;
     font-weight: 600;
-
     cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-
-    transition:
-        background 0.15s ease,
-        border-color 0.15s ease,
-        color 0.15s ease,
-        transform 0.08s ease;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.08s ease;
 }
 
 button:hover {
@@ -132,29 +94,21 @@ button:active {
     transform: scale(0.97);
 }
 
-/* Wichtige Primäraktionen */
 #runBtn,
 #saveRouteBtn,
 #routesPanelBtn {
     border-color: var(--border-strong);
 }
 
-/************************************************************
- * 🔎 INPUTS / SELECTS
- ************************************************************/
 input,
 select {
     background: var(--bg-dark);
     color: var(--text);
-
     border: 1px solid var(--border);
     border-radius: 2px;
-
     padding: 9px 10px;
-
     font-family: "Segoe UI", Arial, sans-serif;
     font-size: 13px;
-
     outline: none;
 }
 
@@ -167,50 +121,30 @@ select:focus {
     min-width: 200px;
 }
 
-/************************************************************
- * 📊 STATUS
- ************************************************************/
 #distance,
 #runStatus,
 #userInfo {
     padding: 6px 8px;
-
     color: var(--primary-bright);
     font-weight: 600;
-
     border-left: 2px solid var(--border);
 }
 
-/************************************************************
- * 🗺️ MAP
- ************************************************************/
 #map {
     width: min(1400px, calc(100% - 28px));
     height: 68vh;
-
     margin: 14px auto 24px;
-
     border: 1px solid var(--map-border);
     background: var(--bg-dark);
-
-    box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.6),
-        0 12px 28px rgba(0, 0, 0, 0.35);
-
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 12px 28px rgba(0, 0, 0, 0.35);
     filter: contrast(1.02) brightness(0.98) saturate(0.92);
-
     z-index: 1;
 }
 
-/************************************************************
- * 📜 RUN HISTORY
- ************************************************************/
 #historyList {
     width: 100%;
     max-height: 220px;
-
     overflow-y: auto;
-
     border-top: 1px solid var(--border);
     padding-top: 8px;
 }
@@ -219,10 +153,8 @@ select:focus {
 .route-item {
     margin: 6px 0;
     padding: 8px;
-
     background: var(--bg-dark);
     border: 1px solid var(--border);
-
     color: var(--text);
     cursor: pointer;
 }
@@ -238,21 +170,12 @@ select:focus {
     margin-top: 6px;
 }
 
-/************************************************************
- * 📍 ROUTES PANEL
- ************************************************************/
 .routes-panel {
-    margin: 10px;
-    padding: 12px;
-
     width: min(1400px, calc(100% - 28px));
-    margin-left: auto;
-    margin-right: auto;
-
+    margin: 10px auto;
+    padding: 12px;
     background: var(--panel);
     border: 1px solid var(--border);
-
-    box-shadow: none;
 }
 
 .routes-panel.hidden {
@@ -261,7 +184,6 @@ select:focus {
 
 .routes-panel h3 {
     margin-top: 0;
-
     color: var(--primary-bright);
     letter-spacing: 0.5px;
 }
@@ -277,16 +199,11 @@ select:focus {
     gap: 8px;
 }
 
-/************************************************************
- * 📍 ACTIVE ROUTE INFO
- ************************************************************/
 .active-route-info {
     margin-bottom: 10px;
     padding: 8px;
-
     background: var(--bg-dark);
     border: 1px solid var(--border);
-
     color: var(--text-dim);
     font-size: 13px;
     line-height: 1.45;
@@ -296,37 +213,25 @@ select:focus {
     color: var(--primary-bright);
 }
 
-/************************************************************
- * 🛰️ HUD
- ************************************************************/
 #hud {
     position: fixed;
     right: 10px;
     bottom: 10px;
-
     padding: 6px 8px;
-
     background: rgba(7, 10, 7, 0.85);
     border: 1px solid var(--border);
-
     color: var(--text-dim);
     font-size: 11px;
     line-height: 1.35;
-
     opacity: 0.85;
     pointer-events: none;
 }
 
-/************************************************************
- * 🔔 TOAST SYSTEM
- ************************************************************/
 #toastContainer {
     position: fixed;
     right: 20px;
     bottom: 20px;
-
     z-index: 9999;
-
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -334,13 +239,10 @@ select:focus {
 
 .toast {
     padding: 10px 14px;
-
     background: var(--panel);
     border: 1px solid var(--border);
-
     color: var(--text);
     font-size: 13px;
-
     opacity: 0;
     transform: translateY(10px);
     animation: toastIn 0.3s forwards;
@@ -363,90 +265,110 @@ select:focus {
     }
 }
 
-/************************************************************
- * 📱 MOBILE VIEW
- ************************************************************/
 @media (max-width: 768px) {
+    body {
+        min-height: 100dvh;
+        overflow: hidden;
+    }
 
     h1 {
-        font-size: 20px;
-        margin: 10px;
+        margin: 8px 10px 2px;
+        font-size: 18px;
+        line-height: 1.1;
     }
 
     h2 {
-        font-size: 11px;
-        margin: 0 10px 8px;
+        display: none;
     }
 
     .toolbar {
-        margin: 8px;
-        padding: 10px;
-
-        gap: 8px;
-
-        max-height: 32vh;
+        width: 100%;
+        margin: 0;
+        padding: 8px;
+        border-left: 0;
+        border-right: 0;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
+        max-height: 30dvh;
         overflow-y: auto;
+        align-items: stretch;
     }
 
-    /* 🔥 Buttons größer & klarer */
-    button {
-        flex: 1 1 100%;
-        min-height: 48px;
-
-        font-size: 14px;
-        padding: 12px;
+    button,
+    input,
+    select {
+        width: 100%;
+        min-width: 0;
+        min-height: 42px;
+        padding: 9px 8px;
+        font-size: 12px;
+        letter-spacing: 0;
+        text-transform: none;
     }
 
-    /* 🔥 RUN Button extra groß */
-    #runBtn {
-        font-size: 16px;
-        font-weight: 700;
-        border-width: 2px;
+    #runBtn,
+    #saveRouteBtn,
+    #routesPanelBtn,
+    #searchInput,
+    #historyList,
+    .toolbar h3 {
+        grid-column: 1 / -1;
     }
 
-    /* 🔎 Suche untereinander */
-    #searchInput {
-        flex: 1 1 100%;
-        min-height: 48px;
-    }
-
-    #searchBtn {
-        flex: 1 1 100%;
-    }
-
-    /* 🔥 Status größer */
     #distance,
     #runStatus,
     #userInfo {
-        flex: 1 1 100%;
-
-        font-size: 14px;
-        padding: 6px;
+        grid-column: span 2;
+        min-height: 36px;
+        padding: 8px;
+        border-left: 0;
+        border: 1px solid var(--border);
+        background: var(--bg-dark);
+        font-size: 12px;
+        overflow-wrap: anywhere;
     }
 
-    /* 🔥 History kleiner, sonst frisst sie Platz */
+    .toolbar h3 {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: var(--text-dim);
+    }
+
     #historyList {
-        max-height: 100px;
+        max-height: 84px;
         font-size: 12px;
     }
 
-    /* 🔥 MAP mehr Fokus */
     #map {
-        height: 62vh;
-        margin: 8px auto 16px;
+        width: 100%;
+        height: calc(100dvh - 34dvh - 36px);
+        min-height: 52dvh;
+        margin: 0;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        box-shadow: none;
     }
 
-    /* 🔥 Routenpanel besser lesbar */
     .routes-panel {
-        margin: 8px;
-        padding: 12px;
+        position: fixed;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        width: auto;
+        max-height: 44dvh;
+        margin: 0;
+        overflow-y: auto;
+        z-index: 900;
     }
 
-    .routes-panel-actions button {
-        flex: 1 1 100%;
+    .routes-panel-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
     }
 
-    /* 🔥 Toast full width */
     #toastContainer {
         right: 10px;
         left: 10px;
@@ -457,32 +379,25 @@ select:focus {
         width: 100%;
     }
 
-    /* HUD weg auf Mobile */
     #hud {
         display: none;
     }
 }
 
-/************************************************************
- * 📱 VERY SMALL PHONES
- ************************************************************/
 @media (max-width: 420px) {
-
-    button {
-        flex: 1 1 100%;
-    }
-
-    #searchInput,
-    #searchBtn {
-        flex: 1 1 100%;
-    }
-
     .toolbar {
-        max-height: 38vh;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        max-height: 34dvh;
+    }
+
+    #distance,
+    #runStatus,
+    #userInfo {
+        grid-column: 1 / -1;
     }
 
     #map {
-    height: 54vh;
-    margin: 8px auto 16px;
-}
+        height: calc(100dvh - 38dvh - 32px);
+        min-height: 48dvh;
+    }
 }
