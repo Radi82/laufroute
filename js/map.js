@@ -14,13 +14,14 @@ import { on, emit } from "./eventBus.js";
 import { decodePolyline, getDistanceKm } from "./utils.js";
 import { saveRouteToDB } from "./storage.js";
 import { log, error } from "./logger.js";
+import { getRouteApiUrl } from "./platform.js";
 
 export let map;
 
-const apiUrl = "/api/route";
+const apiUrl = getRouteApiUrl();
 
-let routePoints = [];          // gesetzte Marker / Stützpunkte
-let routedRoutePoints = [];    // echte ORS-Geometrie entlang der Wege
+let routePoints = [];
+let routedRoutePoints = [];
 let routeDistance = 0;
 let routeMarkers = [];
 let plannedRouteLine = null;
