@@ -42,6 +42,10 @@ Erste Testversion der Laufroute-App.
 
 https://laufroutev12.vercel.app/privacy.html
 
+## Kontakt-E-Mail
+
+vladoslavgmbh@gmail.com
+
 ## Daten-Sicherheit fuer Google Play
 
 Die folgenden Angaben sind als Orientierung fuer das Google-Formular gedacht.
