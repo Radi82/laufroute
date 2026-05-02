@@ -227,6 +227,52 @@ select:focus {
     pointer-events: none;
 }
 
+#hud a {
+    color: var(--primary-bright);
+    pointer-events: auto;
+}
+
+.legal-page {
+    width: min(900px, calc(100% - 28px));
+    margin: 0 auto;
+    padding: 18px 0 40px;
+    line-height: 1.6;
+}
+
+.legal-page section {
+    margin: 18px 0;
+    padding: 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+}
+
+.legal-page h1 {
+    margin-left: 0;
+}
+
+.legal-page h2 {
+    display: block;
+    margin: 0 0 8px;
+    color: var(--primary-bright);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.legal-page p,
+.legal-page li {
+    color: var(--text);
+}
+
+.legal-meta {
+    color: var(--text-dim);
+}
+
+.legal-back-link {
+    display: inline-block;
+    margin: 8px 0;
+    color: var(--primary-bright);
+}
+
 #toastContainer {
     position: fixed;
     right: 20px;
