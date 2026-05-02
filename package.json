@@ -11,6 +11,7 @@
     "android": "npm run cap:sync:android && npx cap open android"
   },
   "dependencies": {
+    "@capacitor/app": "^8.0.0",
     "@capacitor/core": "^8.0.0"
   },
   "devDependencies": {
