@@ -1,4 +1,10 @@
 supabase.js
 .env
-node_modules
+.env.local
+node_modules/
+www/
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
 .DS_Store
