@@ -4,6 +4,7 @@ const ALLOWED_ORIGINS = new Set([
   "https://laufroutev12.vercel.app",
   "https://laufroutev12-radi82s-projects.vercel.app",
   "capacitor://localhost",
+  "https://localhost",
   "http://localhost"
 ]);
 
