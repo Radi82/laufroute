@@ -2,37 +2,37 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laufroute</title>
 
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
-<div id="toastContainer"></div>
 
 <body>
+<div id="toastContainer"></div>
 
 <h1>Laufrouten Maker v2.0</h1>
 <h2>Kleines DIY Projekt. Wird noch weiter ausgebaut. Cheers, M.H ;)</h2>
 
 <div class="toolbar">
-
     <button id="undoBtn">Undo</button>
     <button id="resetBtn">Reset</button>
     <button id="exportBtn">Export</button>
-    <button id="locBtn">📍 Standort</button>
+    <button id="locBtn">Standort</button>
 
-    <input id="searchInput" placeholder="Ort suchen..." />
-    <button id="searchBtn">🔎</button>
+    <input id="searchInput" placeholder="Ort suchen...">
+    <button id="searchBtn">Suchen</button>
 
     <button id="saveRouteBtn">Route speichern</button>
-    <button id="routesPanelBtn">📍 Routen</button>
+    <button id="routesPanelBtn">Routen</button>
 
-    <button id="runBtn">▶ START RUN</button>
+    <button id="runBtn">START RUN</button>
     <span id="runStatus">READY</span>
 
-    <button id="loginBtn">🔐 Login</button>
-    <button id="logoutBtn">🚪 Logout</button>
+    <button id="loginBtn">Login</button>
+    <button id="logoutBtn">Logout</button>
     <span id="userInfo">Not logged in</span>
 
     <button id="importBtn">Import</button>
@@ -42,22 +42,22 @@
 
     <h3>RUN HISTORY</h3>
     <div id="historyList"></div>
-
 </div>
 
 <div id="routesPanel" class="routes-panel hidden">
-    <h3>📍 Gespeicherte Routen</h3>
+    <h3>Gespeicherte Routen</h3>
 
     <select id="routeSelect">
         <option value="">Route auswählen...</option>
     </select>
-<div id="activeRouteInfo" class="active-route-info">
-    Keine Route ausgewählt
-</div>
+
+    <div id="activeRouteInfo" class="active-route-info">
+        Keine Route ausgewählt
+    </div>
 
     <div class="routes-panel-actions">
         <button id="loadSelectedRouteBtn">Laden</button>
-        <button id="exportSelectedRouteBtn">GPX</button>
+        <button id="exportSelectedRouteBtn">Export</button>
         <button id="renameSelectedRouteBtn">Umbenennen</button>
         <button id="deleteSelectedRouteBtn">Löschen</button>
         <button id="shareSelectedRouteBtn">Link</button>
