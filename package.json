@@ -1,5 +1,20 @@
 {
+  "name": "laufroute",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Laufroute web and Android app built with Capacitor.",
   "scripts": {
-    "build": "node build.js"
+    "build": "node scripts/prepare-capacitor-web.cjs",
+    "cap:add:android": "npm run build && npx cap add android",
+    "cap:sync:android": "npm run build && npx cap sync android",
+    "cap:open:android": "npx cap open android",
+    "android": "npm run cap:sync:android && npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0"
   }
 }
