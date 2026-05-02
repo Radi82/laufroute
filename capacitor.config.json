@@ -1,0 +1,8 @@
+{
+  "appId": "com.radi82.laufroute",
+  "appName": "Laufroute",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
