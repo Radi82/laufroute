@@ -4,7 +4,7 @@
   "private": true,
   "description": "Laufroute web and Android app built with Capacitor.",
   "scripts": {
-    "build": "node scripts/prepare-capacitor-web.cjs",
+    "build": "node build.js && node scripts/prepare-capacitor-web.cjs",
     "cap:add:android": "npm run build && npx cap add android",
     "cap:sync:android": "npm run build && npx cap sync android",
     "cap:open:android": "npx cap open android",
