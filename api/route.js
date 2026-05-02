@@ -1,10 +1,22 @@
 const MAX_COORDINATES = 50;
 const MAX_BODY_BYTES = 20_000;
+const ALLOWED_ORIGINS = new Set([
+  "https://laufroutev12.vercel.app",
+  "https://laufroutev12-radi82s-projects.vercel.app",
+  "capacitor://localhost",
+  "http://localhost"
+]);
 
 export default async function handler(req, res) {
+  setCorsHeaders(req, res);
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
   try {
     if (req.method !== "POST") {
-      res.setHeader("Allow", "POST");
+      res.setHeader("Allow", "POST, OPTIONS");
       return res.status(405).json({ error: "Method not allowed" });
     }
 
@@ -51,6 +63,16 @@ export default async function handler(req, res) {
     console.error("FUNCTION ERROR:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
+}
+
+function setCorsHeaders(req, res) {
+  const origin = req.headers.origin;
+  const allowedOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "https://laufroutev12.vercel.app";
+
+  res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Vary", "Origin");
 }
 
 function parseBody(raw) {
