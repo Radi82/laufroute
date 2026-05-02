@@ -12,7 +12,7 @@ Dieses Projekt ist ein persönliches DIY-Tool.
 ![Mobile](https://img.shields.io/badge/mobile-optimized-00ff66)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-> Plane deine Laufstrecken, tracke deine Runs und exportiere alles als GPX.  
+> Plane deine Laufstrecken, tracke deine Runs und exportiere alles als GPX oder JSON.  
 > Minimalistisch. Schnell. Ohne unnötigen Ballast.
 
 ---
@@ -37,9 +37,10 @@ Dieses Projekt ist ein persönliches DIY-Tool.
 - Laden / Umbenennen / Löschen
 - Dropdown-Routenpanel
 
-### 📤 GPX Export
+### 📤 Export
 - aktuelle Route
 - gespeicherte Route
+- GPX und JSON
 - kompatibel mit Garmin & Co
 
 ### 🏃 Run Tracking
@@ -57,14 +58,9 @@ Dieses Projekt ist ein persönliches DIY-Tool.
 - User-spezifische Daten
 
 ### 📱 Mobile UX
-- Bauchtaschen-optimiert 😉
 - große Buttons
 - Map im Fokus
-
-### 🔔 UX Extras
-- Toast Notifications
-- Dark Tactical Design
-- Clean UI
+- Capacitor-Setup für Android vorbereitet
 
 ---
 
@@ -73,7 +69,9 @@ Dieses Projekt ist ein persönliches DIY-Tool.
 - **Frontend:** Vanilla JS (ES Modules)
 - **Map:** Leaflet.js
 - **Backend:** Supabase
+- **Routing Proxy:** Vercel Function
 - **Hosting:** Vercel
+- **Android:** Capacitor
 
 ---
 
@@ -91,8 +89,45 @@ Dieses Projekt ist ein persönliches DIY-Tool.
   utils.js      → Helper Funktionen
   toast.js      → Notifications
   logger.js     → Debug System
+  platform.js   → Web/Android Runtime Helpers
 
+/api
+  route.js      → Vercel Proxy für OpenRouteService
 
+/scripts
+  prepare-capacitor-web.cjs → kopiert Web-Dateien nach www/
+```
+
+---
+
+## 📱 Android App mit Capacitor
+
+Das Repo ist für eine echte Android-App mit Capacitor vorbereitet.
+
+```bash
+npm install
+npm run build
+npm run cap:add:android
+npm run cap:open:android
+```
+
+Nach Web-Code-Änderungen:
+
+```bash
+npm run cap:sync:android
+```
+
+Mehr Details: [docs/android-capacitor.md](./docs/android-capacitor.md)
+
+Wichtig für Supabase Auth:
+
+```text
+com.radi82.laufroute://auth/callback
+```
+
+muss in Supabase als Redirect URL erlaubt werden. Der native Android Deep-Link wird im nächsten Schritt im generierten `android/`-Projekt ergänzt.
+
+---
 
 ## 🚀 Installation & Setup
 
@@ -101,14 +136,17 @@ Dieses Projekt ist ein persönliches DIY-Tool.
 
 ### 🧱 1. Repository klonen & starten
 
-git clone https://github.com/DEIN-USERNAME/laufroute.git
+```bash
+git clone https://github.com/Radi82/laufroute.git
 cd laufroute
 npx live-server
+```
 
 ---
 
 ### 🗄️ 2. Supabase Tabellen erstellen
 
+```sql
 create table runs (
   id uuid default gen_random_uuid() primary key,
   user_id uuid,
@@ -126,22 +164,27 @@ create table routes (
   points jsonb,
   created_at timestamp default now()
 );
+```
 
 ---
 
 ### 🔐 3. Permissions setzen
 
+```sql
 GRANT SELECT, INSERT, DELETE, UPDATE ON public.runs TO authenticated;
 GRANT SELECT, INSERT, DELETE, UPDATE ON public.routes TO authenticated;
+```
 
 ---
 
-### 🔗 4. Supabase verbinden (supabase.js)
+### 🔗 4. Supabase verbinden (`supabase.js`)
 
+```js
 const supabaseUrl = "https://DEIN-PROJEKT.supabase.co";
 const supabaseKey = "DEIN-ANON-KEY";
 
 window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+```
 
 ---
 
@@ -157,7 +200,10 @@ window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 ### ⚠️ 6. Supabase URL setzen
 
 Site URL:
+
+```text
 https://deine-app.vercel.app
+```
 
 </details>
 
